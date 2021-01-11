@@ -79,18 +79,5 @@ namespace AliceHat
         {
             return num + " " + GetNumericPhrase(num, one, few, many);
         }
-
-        public static T[] ConcatArrays<T>(T[] a, T[] b)
-        {
-            T[] arr = null;
-            if (a != null && b  != null)
-                arr = a.Concat(b).ToArray();
-            else if (a != null)
-                arr = a.ToArray();
-            else if (b != null) 
-                arr = b.ToArray();
-
-            return arr;
-        }
     }
 }

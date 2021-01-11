@@ -159,10 +159,23 @@ namespace AliceHat.Models.Alice
         public static Phrase operator +(Phrase a, Phrase b)
         {
             var sumText = a.Text + b.Text;
-            var sumButtons = Utils.ConcatArrays(a.Buttons, b.Buttons);
-            var sumImages = Utils.ConcatArrays(a.Images, b.Images);
+            var sumButtons = ConcatArrays(a.Buttons, b.Buttons);
+            var sumImages = ConcatArrays(a.Images, b.Images);
             
             return new Phrase(sumText, sumButtons, sumImages);
+        }
+        
+        private static T[] ConcatArrays<T>(T[] a, T[] b)
+        {
+            T[] arr = null;
+            if (a != null && b  != null)
+                arr = a.Concat(b).ToArray();
+            else if (a != null)
+                arr = a.ToArray();
+            else if (b != null) 
+                arr = b.ToArray();
+
+            return arr;
         }
     }
 }

@@ -9,9 +9,9 @@ namespace AliceHat.Models.Alice
         private static readonly Regex Pattern = new("\\[[a-z\\+]{1,10}\\|?[^\\[\\]]*\\]");
         private static readonly Regex HasScreenPattern = new("\\[hasScreen\\|([^\\|]*)\\|([^\\|]*)\\]");
 
-        public string Text { get; private set; }
-        public string[] Buttons { get; private set; }
-        public string[] Images { get; private set; }
+        public string Text { get; }
+        public string[] Buttons { get; }
+        public string[] Images { get; }
 
         private Phrase() { }
 

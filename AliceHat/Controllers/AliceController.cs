@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using AliceHat.Models;
 using AliceHat.Models.Alice;
 using AliceHat.Services;
 using Microsoft.AspNetCore.Http;
@@ -23,16 +24,32 @@ namespace AliceHat.Controllers
             NullValueHandling = NullValueHandling.Include
         };
         private readonly AliceService _aliceService;
+        private readonly ContentService _contentService;
 
-        public AliceController(AliceService aliceService)
+        public AliceController(AliceService aliceService, ContentService contentService)
         {
             _aliceService = aliceService;
+            _contentService = contentService;
         }
         
         [HttpGet]
         public string Get()
         {
             return "It works!";
+        }
+
+        [HttpGet("/word/{complexity}")]
+        public ContentResult Word(string complexity)
+        {
+            var c = Enum.Parse<Complexity>(complexity);
+            var w = _contentService.GetByComplexity(1, c);
+            var text = $"<p>{w[0].Definition}</p><p><font color='white'>{w[0].Word}</font></p>";
+            
+            return new ContentResult
+            {
+                ContentType = "text/html",
+                Content = $"<html><head><meta charset=\"utf-8\"></head><body>{text}</body></html>"
+            };
         }
 
         [HttpPost]

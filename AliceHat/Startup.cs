@@ -1,6 +1,8 @@
+using System;
+using AliceHat.Models;
 using AliceHat.Services;
+using AliceHat.Services.Abstract;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,12 +19,19 @@ namespace AliceHat
             services.AddSingleton<AliceService>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ContentService contentService)
+        public void Configure(IApplicationBuilder app, IDbService dbService, ContentService contentService)
         {
             app.UseRouting();
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
             contentService.LoadWords(@"words.csv");
+            
+            dbService.Init("alicehat", type =>
+            {
+                if (type == typeof(User)) return "users";
+                if (type == typeof(WordData)) return "words";
+                throw new ArgumentOutOfRangeException(nameof(type), $"No collection for type: {type.FullName}");
+            });
         }
     }
 }

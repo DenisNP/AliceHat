@@ -1,9 +1,24 @@
-﻿namespace AliceHat.Models
+﻿using AliceHat.Models.Abstract;
+
+namespace AliceHat.Models
 {
-    public class WordData
+    public class WordData : IIdentity
     {
-        public string Word { get; init; }
-        public Complexity Complexity { get; init; }
-        public string[] Definitions { get; init; }   
+        public string Id { get; set; }
+        
+        public string Word { get; set; }
+        
+        public Complexity Complexity { get; set; }
+
+        public WordStatus Status { get; set; }
+        
+        public string Definition { get; init; }
+    }
+
+    public enum WordStatus
+    {
+        Untouched = 0,
+        Taken = 1,
+        Ready = 2
     }
 }

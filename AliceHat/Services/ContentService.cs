@@ -40,26 +40,17 @@ namespace AliceHat.Services
                     .Skip(2)
                     .Select(x => Regex.Replace(x.ToUpperFirst().Trim(), @"\s+", " "))
                     .Where(x => !x.IsNullOrEmpty())
-                    .Select(x => (full: x, tokens: Regex.Split(x, @"[\s,\.\-]+")))
-                    .Where(x => ScoreDefinition(x) < 3)
-                    .OrderBy(ScoreDefinition)
                     .ToArray();
                 
                 if (definitions.Length == 0) continue;
-
-                // check some additional conditions
-                var score = ScoreDefinition(definitions[0]);
-                if (score > 0)
-                {
-                    continue; // TODO
-                }
 
                 // write new data
                 var wordData = new WordData
                 {
                     Word = word,
                     Complexity = complexity,
-                    Definitions = definitions.Select(x => x.full).ToArray()
+                    Definition = definitions.First(),
+                    Status = WordStatus.Untouched
                 };
                 
                 if (!_words.ContainsKey(complexity)) _words.Add(complexity, new List<WordData>());
@@ -68,17 +59,18 @@ namespace AliceHat.Services
             
             _logger.LogInformation($"Done. Words loaded: {_words.Values.Sum(l => l.Count)}");
         }
-
-        private static int ScoreDefinition((string, string[]) _)
+        
+        public WordData[] GetByComplexity(int wordsCount, Complexity complexity)
         {
-            var (full, tokens) = _;
+            var wordsAvailable = _words[complexity].Count;
+            if (wordsAvailable < wordsCount)
+                throw new ArgumentException("There are not enough words in storage");
 
-            return tokens.Length switch
-            {
-                <= LowestDefLenWords => 2,
-                >= HighestDefLenWords => full.Length >= HighestDefLenChars ? 3 : 1,
-                _ => 0
-            };
+            return Enumerable.Range(0, wordsAvailable)
+                .Shuffle()
+                .Take(wordsCount)
+                .Select(idx => _words[complexity][idx])
+                .ToArray();
         }
     }
 }

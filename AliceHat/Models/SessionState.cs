@@ -4,9 +4,11 @@ namespace AliceHat.Models
 {
     public class SessionState : ICloneable<SessionState>
     {
+        
+        
         public SessionState Clone()
         {
-            return new SessionState();
+            return new ();
         }
     }
 }

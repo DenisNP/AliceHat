@@ -35,9 +35,9 @@ namespace AliceHat
             return string.Join(separator, s);
         }
         
-        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> list)  
+        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> list, int? seed = null)  
         {
-            var rng = new Random();
+            var rng = seed == null ? new Random() : new Random(seed.Value);
             var buffer = list.ToList();
             for (var i = 0; i < buffer.Count; i++)
             {

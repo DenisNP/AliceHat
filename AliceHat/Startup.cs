@@ -15,6 +15,7 @@ namespace AliceHat
             services.AddControllers();
             services.Configure<KestrelServerOptions>(options => { options.AllowSynchronousIO = true; });
             
+            services.AddSingleton<IDbService, MongoService>();
             services.AddSingleton<ContentService>();
             services.AddSingleton<AliceService>();
         }
@@ -23,8 +24,6 @@ namespace AliceHat
         {
             app.UseRouting();
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
-
-            contentService.LoadWords(@"words.csv");
             
             dbService.Init("alicehat", type =>
             {
@@ -32,6 +31,8 @@ namespace AliceHat
                 if (type == typeof(WordData)) return "words";
                 throw new ArgumentOutOfRangeException(nameof(type), $"No collection for type: {type.FullName}");
             });
+
+            contentService.LoadWords();
         }
     }
 }

@@ -4,15 +4,15 @@ namespace AliceHat.Models
 {
     public class WordData : IIdentity
     {
-        public string Id { get; set; }
+        public string Id { get; private set; }
         
-        public string Word { get; set; }
+        public string Word { get; private set; }
         
-        public Complexity Complexity { get; set; }
+        public Complexity Complexity { get; private set; }
 
-        public WordStatus Status { get; set; }
+        public WordStatus Status { get; private set; }
         
-        public string Definition { get; init; }
+        public string Definition { get; private set; }
     }
 
     public enum WordStatus

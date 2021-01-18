@@ -9,10 +9,11 @@ namespace AliceHat.Services
 {
     public class ContentService
     {
+        private const int AllowedOperations = 1000;
+        
         private readonly ILogger<ContentService> _logger;
         private readonly IDbService _dbService;
         private readonly Dictionary<Complexity, List<WordData>> _words = new();
-        private const int AllowedOperations = 1000;
         
         public ContentService(ILogger<ContentService> logger, IDbService dbService)
         {

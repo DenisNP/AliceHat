@@ -18,9 +18,10 @@ namespace AliceHat
             services.AddSingleton<IDbService, MongoService>();
             services.AddSingleton<ContentService>();
             services.AddSingleton<AliceService>();
+            services.AddSingleton<TelegramService>();
         }
 
-        public void Configure(IApplicationBuilder app, IDbService dbService, ContentService contentService)
+        public void Configure(IApplicationBuilder app, IDbService dbService, ContentService contentService, TelegramService telegramService)
         {
             app.UseRouting();
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
@@ -33,6 +34,8 @@ namespace AliceHat
             });
 
             contentService.LoadWords();
+            
+            telegramService.Start();
         }
     }
 }

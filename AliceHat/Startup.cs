@@ -30,6 +30,7 @@ namespace AliceHat
             {
                 if (type == typeof(User)) return "users";
                 if (type == typeof(WordData)) return "words";
+                if (type == typeof(TgUser)) return "tgusers";
                 throw new ArgumentOutOfRangeException(nameof(type), $"No collection for type: {type.FullName}");
             });
 

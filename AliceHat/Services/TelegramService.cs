@@ -98,6 +98,11 @@ namespace AliceHat.Services
                 {
                     var input = update.Message.Text;
 
+                    if (input == "/word")
+                    {
+                        
+                    }
+                    
                     string m;
                     if (input != "/keep")
                     {
@@ -185,7 +190,7 @@ namespace AliceHat.Services
             }
         }
 
-        private void GiveNewWord(TgUser user)
+        private void GiveNewWord(TgUser user, bool skipped = false)
         {
             // select random word
             var wordsCount = _dbService.Collection<WordData>()
@@ -210,7 +215,7 @@ namespace AliceHat.Services
             _dbService.Update(user);
             
             // send message
-            var m = $"Следующее слово:\n\n{GetWordInfo(word, false)}" +
+            var m = $"{(skipped ? "Предыдущее слово пропущено. " : "")}Следующее слово:\n\n{GetWordInfo(word, false)}" +
                     "\n\nМожете подумать, что это, а затем нажать кнопку ниже и узнать ответ.";
             
             _telegram.SendTextMessageAsync(

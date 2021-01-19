@@ -100,7 +100,8 @@ namespace AliceHat.Services
 
                     if (input == "/word")
                     {
-                        
+                        GiveNewWord(user, true);
+                        return;
                     }
                     
                     string m;

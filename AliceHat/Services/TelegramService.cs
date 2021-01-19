@@ -101,7 +101,7 @@ namespace AliceHat.Services
                     string m;
                     if (input != "/keep")
                     {
-                        user.LastWord.Definition = input;
+                        user.LastWord.Definition = input.ToLowerFirst();
                         _dbService.Update(user);
                         
                         m = $"Определение слова обновлено.\n\n{GetWordInfo(user.LastWord, true)}\n\n" +

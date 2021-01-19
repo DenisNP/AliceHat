@@ -19,6 +19,14 @@ namespace AliceHat
             return s[0].ToString().ToUpper() + s.Substring(1);
         }
 
+        public static string ToLowerFirst(this string s)
+        {
+            if (s.IsNullOrEmpty()) return s;
+            if (s.Length == 1) return s.ToLower();
+
+            return s[0].ToString().ToLower() + s.Substring(1);
+        }
+
         public static T PickRandom<T>(this IList<T> list)
         {
             var rng = new Random();

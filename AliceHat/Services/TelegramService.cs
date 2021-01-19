@@ -198,6 +198,8 @@ namespace AliceHat.Services
                 .Skip(index)
                 .First();
 
+            word.Definition = word.Definition.ToLowerFirst();
+
             // update word status
             word.Status = WordStatus.Taken;
             _dbService.Update(word);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using AliceHat.Models;
 using AliceHat.Services.Abstract;
 using Microsoft.Extensions.Logging;
@@ -77,16 +78,15 @@ namespace AliceHat.Services
                     var m = "Это бот для набора определений слов в игру <b>Шляпа</b>. " +
                             "Он присылает кривое определение из словаря, а вам нужно вместо него написать " +
                             "<i>хорошее</i> определение для игры.\n\n<b>Как писать:</b>\n" +
-                            "Коротко, но ёмко. По одной фразе игрок должен сразу понимать, о чём речь. " +
-                            "Старайтесь избегать определений из <i>одного</i> слова, но и больше <i>семи</i> слов — " +
-                            "скорее всего неудачный вариант. И объяснение по-возможности не должно содержать " +
-                            "однокоренных слов, хотя в данной версии игры это правило не строгое. " +
-                            "Представьте, что вы пишете задание для сканворда.\n\n<b>Хорошо</b>:\n" +
-                            "<i>Большая рыба с усами (сом)</i>; <i>Колокольный блок в церкви (звонница)</i>\n" +
+                            "Вместе с заданием бот будет подсказывать первую букву слова, поэтому определение " +
+                            "должно быть не слишком простым по смыслу, но коротким по длине: " +
+                            "в идеале 1-3 слова. Думайте, как такое слово было бы определено <b>в сканворде</b>. " +
+                            "Используйте ассоциации и переносные значения." +
+                            "\n\n<b>Хорошо</b>:\n" +
+                            "<i>Усатый плавун (сом)</i>; <i>«Оркестр» для монаха (звонница)</i>\n" +
                             "<b>Плохо:</b>\n" +
-                            "<i>Высшая мера наказания (вышка)</i>; <i>Устройство в виде металлического полотна с зубьями" +
-                            " для разрезания древесины или металла (ножовка)</i>" +
-                            "\n\n/word — получить новое слово\n/keep — вместо написания определения оставить существующее";
+                            "<i>Большая рыба с усами (сом)</i>; <i>Колокольный блок в церкви (звонница)</i>" +
+                            "\n\n/word — получить новое слово";
 
                     if (user.WordsProcessed > 0) m += $"\n\nВы обработали слов: {user.WordsProcessed}";
 
@@ -104,23 +104,25 @@ namespace AliceHat.Services
                         GiveNewWord(user, true);
                         return;
                     }
-                    
-                    string m;
-                    if (input != "/keep")
+
+                    var tokens = Regex.Split(input.ToLower(), @"[\.,\-\s\(\)""'!?—:;]+");
+                    if (tokens.Length > 4)
                     {
-                        user.LastWord.Definition = input.ToLowerFirst();
-                        _dbService.Update(user);
+                        _telegram.SendTextMessageAsync(
+                            new ChatId(userId.Value),
+                            "Определение слишком длинное. Используйте переносные значения, метафоры, игру слов. " +
+                            "Или можете пропустить слово командой /word",
+                            ParseMode.Html
+                        );
+                        return;
+                    }
+
+                    user.LastWord.Definition = input.ToLowerFirst();
+                    _dbService.Update(user);
                         
-                        m = $"Определение слова обновлено.\n\n{GetWordInfo(user.LastWord, true)}\n\n" +
+                    var m = $"Определение слова обновлено.\n\n{GetWordInfo(user.LastWord, true)}\n\n" +
                             "Можете изменить его ещё раз. Для завершения выберите сложность, " +
                             "как вы думаете, насколько это сложное слово?";
-                    }
-                    else
-                    {
-                        m = $"Определение слова сохранено как есть.\n\n<i>{GetWordInfo(user.LastWord, true)}</i>\n\n" +
-                            "Можете изменить его. Для завершения выберите сложность, " +
-                            "как вы думаете, насколько это сложное слово?";
-                    }
 
                     var kb = new InlineKeyboardMarkup(new InlineKeyboardButton[]
                     {
@@ -147,9 +149,8 @@ namespace AliceHat.Services
                 {
                     if (update.CallbackQuery.Data == "show_word")
                     {
-                        var m = $"{GetWordInfo(user.LastWord, true)}\n\nНапишите мне текстом определение " +
-                                "получше, либо используйте /keep, чтобы оставить это, если оно кажется вам подходящим " +
-                                "для игры";
+                        var m = $"{GetWordInfo(user.LastWord, true)}\n\n" +
+                                "Напишите мне текстом определение <b>в стиле сканвордов</b>: 1-3 слова по возможности";
 
                         _telegram.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
 
@@ -233,7 +234,8 @@ namespace AliceHat.Services
 
         private string GetWordInfo(WordData w, bool withWord)
         {
-            return withWord ? $"<i>{w.Word} — {w.Definition}</i>" : $"<i>{w.Definition}</i>";
+            var def = $"{w.Definition}; на букву {w.Word[0].ToString().ToUpper()}";
+            return withWord ? $"<i>{w.Word} — {def}</i>" : $"<i>{def}</i>";
         }
     }
 }

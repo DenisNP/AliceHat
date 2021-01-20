@@ -193,7 +193,7 @@ namespace AliceHat.Services
                         if (user.WordsProcessed % 10 == 0)
                         {
                             var count = _dbService.Collection<WordData>().Count(w => w.Status == WordStatus.Ready);
-                            allCount = $"\bВсего в базе обработанных слов: <b>{count}</b>";
+                            allCount = $"\nВсего в базе обработанных слов: <b>{count}</b>";
                         }
                         var m = $"Готово, слово записано!\nВы обработали слов: <b>{user.WordsProcessed}</b>{allCount}\n\n" +
                                 "/word — ещё слово";

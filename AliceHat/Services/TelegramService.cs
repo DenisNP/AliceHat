@@ -88,7 +88,12 @@ namespace AliceHat.Services
                             "<i>Большая рыба с усами (сом)</i>; <i>Колокольный блок в церкви (звонница)</i>" +
                             "\n\n/word — получить новое слово\nПо всем вопросам — @peshekhonov";
 
-                    if (user.WordsProcessed > 0) m += $"\n\nВы обработали слов: {user.WordsProcessed}";
+                    if (user.WordsProcessed > 0)
+                    {
+                        var count = _dbService.Collection<WordData>().Count(w => w.Status == WordStatus.Ready);
+                        m += $"\n\nВы обработали слов: <b>{user.WordsProcessed}</b>" +
+                             $"\nВсего в базе обработанных слов: <b>{count}</b>";
+                    }
 
                     _telegram.SendTextMessageAsync(new ChatId(userId.Value), m, ParseMode.Html);
                 }

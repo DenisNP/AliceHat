@@ -105,24 +105,34 @@ namespace AliceHat.Services
                         return;
                     }
 
-                    var tokens = Regex.Split(input.ToLower(), @"[\.,\-\s\(\)""'!?—:;]+");
-                    if (tokens.Length > 4)
+                    string m;
+                    if (input == "/keep")
                     {
-                        _telegram.SendTextMessageAsync(
-                            new ChatId(userId.Value),
-                            "Определение слишком длинное. Используйте переносные значения, метафоры, игру слов. " +
-                            "Или можете пропустить слово командой /word",
-                            ParseMode.Html
-                        );
-                        return;
+                        m = $"Определение слова оставлено как есть.\n\n{GetWordInfo(user.LastWord, true)}\n\n" +
+                            "Можете изменить его. Для завершения выберите сложность, " +
+                            "как вы думаете, насколько это сложное слово?";
                     }
+                    else
+                    {
+                        var tokens = Regex.Split(input.ToLower(), @"[\.,\-\s\(\)""'!?—:;]+");
+                        if (tokens.Length > 4)
+                        {
+                            _telegram.SendTextMessageAsync(
+                                new ChatId(userId.Value),
+                                "Определение слишком длинное. Используйте переносные значения, метафоры, игру слов. " +
+                                "Или можете пропустить слово командой /word",
+                                ParseMode.Html
+                            );
+                            return;
+                        }
 
-                    user.LastWord.Definition = input.ToLowerFirst();
-                    _dbService.Update(user);
+                        user.LastWord.Definition = input.ToLowerFirst();
+                        _dbService.Update(user);
                         
-                    var m = $"Определение слова обновлено.\n\n{GetWordInfo(user.LastWord, true)}\n\n" +
+                        m = $"Определение слова обновлено.\n\n{GetWordInfo(user.LastWord, true)}\n\n" +
                             "Можете изменить его ещё раз. Для завершения выберите сложность, " +
                             "как вы думаете, насколько это сложное слово?";
+                    }
 
                     var kb = new InlineKeyboardMarkup(new InlineKeyboardButton[]
                     {
@@ -150,7 +160,8 @@ namespace AliceHat.Services
                     if (update.CallbackQuery.Data == "show_word")
                     {
                         var m = $"{GetWordInfo(user.LastWord, true)}\n\n" +
-                                "Напишите мне текстом определение <b>в стиле сканвордов</b>: 1-3 слова по возможности";
+                                "Напишите мне текстом определение <b>в стиле сканвордов</b>: 1-3 слова по возможности. " +
+                                "/keep — оставить текущее определение";
 
                         _telegram.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
 

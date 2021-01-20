@@ -189,7 +189,13 @@ namespace AliceHat.Services
                         
                         _telegram.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
 
-                        var m = $"Готово, слово записано! Всего вы обработали слов: <b>{user.WordsProcessed}</b>\n\n" +
+                        var allCount = "";
+                        if (user.WordsProcessed % 10 == 0)
+                        {
+                            var count = _dbService.Collection<WordData>().Count(w => w.Status == WordStatus.Ready);
+                            allCount = $" Всего в базе обработанных слов: <b>{count}</b>";
+                        }
+                        var m = $"Готово, слово записано! Вы обработали слов: <b>{user.WordsProcessed}</b>{allCount}\n\n" +
                                 "/word — ещё слово";
 
                         _telegram.EditMessageReplyMarkupAsync(

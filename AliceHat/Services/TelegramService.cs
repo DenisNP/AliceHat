@@ -68,10 +68,13 @@ namespace AliceHat.Services
             if (user.LastWord == null && update.Message != null)
             {
                 var input = update.Message.Text;
-                if (input == "/word")
+                if (input.StartsWith("/word"))
                 {
+                    var inputData = input.Split(" ");
+                    var forceWord = inputData.Length > 1 ? inputData[1] : "";
+                    
                     // command to give new word
-                    GiveNewWord(user);
+                    GiveNewWord(user, false, forceWord);
                 }
                 else 
                 {
@@ -218,18 +221,27 @@ namespace AliceHat.Services
             }
         }
 
-        private void GiveNewWord(TgUser user, bool skipped = false)
+        private void GiveNewWord(TgUser user, bool skipped = false, string forceWord = "")
         {
-            // select random word
-            var wordsCount = _dbService.Collection<WordData>()
-                .Count(w => w.Status == WordStatus.Untouched);
+            WordData word;
 
-            var index = _random.Next(0, wordsCount);
+            if (forceWord.IsNullOrEmpty())
+            {
+                // select random word
+                var wordsCount = _dbService.Collection<WordData>()
+                    .Count(w => w.Status == WordStatus.Untouched);
 
-            var word = _dbService.Collection<WordData>()
-                .Where(w => w.Status == WordStatus.Untouched)
-                .Skip(index)
-                .First();
+                var index = _random.Next(0, wordsCount);
+
+                word = _dbService.Collection<WordData>()
+                    .Where(w => w.Status == WordStatus.Untouched)
+                    .Skip(index)
+                    .First();
+            }
+            else
+            {
+                word = _dbService.Collection<WordData>().First(w => w.Word == forceWord);
+            }
 
             word.Definition = word.Definition.ToLowerFirst();
 

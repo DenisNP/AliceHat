@@ -120,7 +120,7 @@ namespace AliceHat.Services
                     else
                     {
                         var tokens = Regex.Split(input.ToLower(), @"[\.,\-\s\(\)""'!?—:;]+");
-                        if (tokens.Length > 4)
+                        if (tokens.Length > 5 || input.Length > 40)
                         {
                             _telegram.SendTextMessageAsync(
                                 new ChatId(userId.Value),

@@ -161,7 +161,7 @@ namespace AliceHat.Services
                     {
                         var m = $"{GetWordInfo(user.LastWord, true)}\n\n" +
                                 "Напишите мне текстом определение <b>в стиле сканвордов</b>: 1-3 слова по возможности. " +
-                                "/keep — оставить текущее определение";
+                                "\n\n/keep — оставить текущее определение\n/word — пропустить слово";
 
                         _telegram.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
 

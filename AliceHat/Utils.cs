@@ -45,7 +45,7 @@ namespace AliceHat
         
         public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> list, int? seed = null)  
         {
-            var rng = seed == null ? new Random() : new Random(seed.Value);
+            Random rng = seed == null ? new Random() : new Random(seed.Value);
             var buffer = list.ToList();
             for (var i = 0; i < buffer.Count; i++)
             {

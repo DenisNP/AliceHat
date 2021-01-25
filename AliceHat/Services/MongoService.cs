@@ -45,7 +45,7 @@ namespace AliceHat.Services
         public T ById<T>(string id, bool allowNull = true, string? collection = null) where T : IIdentity
         {
             var col = GetCollection<T>(collection);
-            var obj = col.AsQueryable().FirstOrDefault(x => x.Id == id);
+            T? obj = col.AsQueryable().FirstOrDefault(x => x.Id == id);
             if (obj == null && !allowNull)
             {
                 throw new KeyNotFoundException(

@@ -29,7 +29,7 @@ namespace AliceHat.Services
                 .Where(w => w.Status == WordStatus.Ready)
                 .ToList();
             
-            foreach (var wordData in allWords)
+            foreach (WordData wordData in allWords)
             {
                 if (!_words.ContainsKey(wordData.Complexity))
                     _words.Add(wordData.Complexity, new List<WordData>());
@@ -57,7 +57,7 @@ namespace AliceHat.Services
                 if (selectedIndexes.Contains(i)) return;
                 
                 // check if word is excluded
-                var w = wordsAvailable[i];
+                WordData w = wordsAvailable[i];
                 if (excludeIds != null && excludeIds.Contains(w.Id)) return;
 
                 // add word to output list

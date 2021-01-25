@@ -13,6 +13,8 @@ namespace AliceHat.Services
 {
     public class TelegramService
     {
+        private const int MyTelegramId = 928079;
+        
         private readonly ILogger<TelegramService> _logger;
         private readonly IDbService _dbService;
         private readonly ContentService _contentService;
@@ -49,6 +51,19 @@ namespace AliceHat.Services
         public string GetToken()
         {
             return _botToken;
+        }
+
+        public void SendAll(string text)
+        {
+            var allUsers = _dbService.Collection<TgUser>().ToList();
+
+            foreach (TgUser user in allUsers) 
+                _telegram.SendTextMessageAsync(new ChatId(int.Parse(user.Id)), text, ParseMode.Html);
+        }
+
+        public void SendMe(string text)
+        {
+            _telegram.SendTextMessageAsync(new ChatId(MyTelegramId), text, ParseMode.Html);
         }
 
         public void HandleUpdate(Update update)

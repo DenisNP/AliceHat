@@ -25,11 +25,13 @@ namespace AliceHat.Controllers
         };
         private readonly AliceService _aliceService;
         private readonly ContentService _contentService;
+        private readonly TelegramService _telegramService;
 
-        public AliceController(AliceService aliceService, ContentService contentService)
+        public AliceController(AliceService aliceService, ContentService contentService, TelegramService telegramService)
         {
             _aliceService = aliceService;
             _contentService = contentService;
+            _telegramService = telegramService;
         }
         
         [HttpGet]
@@ -52,11 +54,30 @@ namespace AliceHat.Controllers
             };
         }
 
+        [HttpGet("/send")]
+        public ContentResult SendToAll([FromQuery(Name = "text")] string text, [FromQuery(Name="me")] int me)
+        {
+            if (me == 0)
+            {
+                _telegramService.SendAll(text.Replace(@"\n", "\n"));
+            }
+            else
+            {
+                _telegramService.SendMe(text.Replace(@"\n", "\n"));
+            }
+
+            return new ContentResult
+            {
+                ContentType = "text/html",
+                Content = $"<html><head><meta charset=\"utf-8\"></head><body>{text}</body></html>"
+            };
+        }
+
         [HttpPost]
         public Task Post()
         {
             using var reader = new StreamReader(Request.Body);
-            var body = reader.ReadToEnd();
+            string body = reader.ReadToEnd();
 
             var request = JsonConvert.DeserializeObject<AliceRequest>(body, ConverterSettings);
             if (request == null)
@@ -69,14 +90,14 @@ namespace AliceHat.Controllers
             if (request.IsPing())
             {
                 var pong = new AliceResponse(request).ToPong();
-                var pongResponse = JsonConvert.SerializeObject(pong, ConverterSettings);
+                string pongResponse = JsonConvert.SerializeObject(pong, ConverterSettings);
                 return Response.WriteAsync(pongResponse);
             }
 
             Console.WriteLine($"REQUEST:\n{JsonConvert.SerializeObject(request, ConverterSettings)}\n");
             
-            var response = _aliceService.HandleRequest(request);
-            var stringResponse = JsonConvert.SerializeObject(response, ConverterSettings);
+            AliceResponse response = _aliceService.HandleRequest(request);
+            string stringResponse = JsonConvert.SerializeObject(response, ConverterSettings);
 
             Console.WriteLine($"RESPONSE:\n{stringResponse}\n");
             

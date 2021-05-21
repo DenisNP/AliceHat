@@ -68,7 +68,7 @@ namespace AliceHat.Services
 
         public void HandleUpdate(Update update)
         {
-            var userId = update?.Message?.From?.Id ?? update?.CallbackQuery?.From?.Id;
+            int? userId = update?.Message?.From?.Id ?? update?.CallbackQuery?.From?.Id;
             if (!userId.HasValue) return;
 
             // read or create user
@@ -82,36 +82,36 @@ namespace AliceHat.Services
             // on idle state
             if (user.LastWord == null && update.Message != null)
             {
-                var input = update.Message.Text;
+                string input = update.Message.Text;
                 if (input.StartsWith("/word"))
                 {
-                    var inputData = input.Split(" ");
-                    var forceWord = inputData.Length > 1 ? inputData[1] : "";
+                    string[] inputData = input.Split(" ");
+                    string forceWord = inputData.Length > 1 ? inputData[1] : "";
                     
                     // command to give new word
                     GiveNewWord(user, false, forceWord);
                 }
                 else 
                 {
-                    var m = "Это бот для набора определений слов в игру <b>Шляпа</b>. " +
-                            "Он присылает кривое определение из словаря, а вам нужно вместо него написать " +
-                            "<i>хорошее</i> определение для игры.\n\n<b>Как писать:</b>\n" +
-                            "Вместе с заданием бот будет подсказывать первую букву слова, поэтому определение " +
-                            "должно быть не слишком простым по смыслу, но коротким по длине: " +
-                            "в идеале 1-4 слова. Думайте, как такое слово было бы определено <b>в сканворде</b>. " +
-                            "Используйте ассоциации и переносные значения. Но если слово само по себе сложное, можно " +
-                            "описывать его буквально." +
-                            "\n\n<b>Хорошо</b>:\n" +
-                            "<i>Усатый плавун (сом)</i>; <i>«Оркестр» для монаха (звонница)</i>;\n" +
-                            "<b>Плохо:</b>\n" +
-                            "<i>Большая пресноводная рыба с усами (сом)</i>; <i>Колокольный блок в церкви (звонница)</i>;" +
-                            "\n<b>Допустимо</b>:\n<i>Военное пальто с подкладкой " +
-                            "(бушлат, определение буквальное, потому что слово сложное)</i>" +
-                            "\n\n/word — получить новое слово\nПо всем вопросам — @peshekhonov";
+                    string m = "Это бот для набора определений слов в игру <b>Шляпа</b>. " +
+                               "Он присылает кривое определение из словаря, а вам нужно вместо него написать " +
+                               "<i>хорошее</i> определение для игры.\n\n<b>Как писать:</b>\n" +
+                               "Вместе с заданием бот будет подсказывать первую букву слова, поэтому определение " +
+                               "должно быть не слишком простым по смыслу, но коротким по длине: " +
+                               "в идеале 1-4 слова. Думайте, как такое слово было бы определено <b>в сканворде</b>. " +
+                               "Используйте ассоциации и переносные значения. Но если слово само по себе сложное, можно " +
+                               "описывать его буквально." +
+                               "\n\n<b>Хорошо</b>:\n" +
+                               "<i>Усатый плавун (сом)</i>; <i>«Оркестр» для монаха (звонница)</i>;\n" +
+                               "<b>Плохо:</b>\n" +
+                               "<i>Большая пресноводная рыба с усами (сом)</i>; <i>Колокольный блок в церкви (звонница)</i>;" +
+                               "\n<b>Допустимо</b>:\n<i>Военное пальто с подкладкой " +
+                               "(бушлат, определение буквальное, потому что слово сложное)</i>" +
+                               "\n\n/word — получить новое слово\nПо всем вопросам — @peshekhonov";
 
                     if (user.WordsProcessed > 0)
                     {
-                        var count = _dbService.Collection<WordData>().Count(w => w.Status == WordStatus.Ready);
+                        int count = _dbService.Collection<WordData>().Count(w => w.Status == WordStatus.Ready);
                         m += $"\n\nВы обработали слов: <b>{user.WordsProcessed}</b>" +
                              $"\nВсего в базе обработанных слов: <b>{count}</b>";
                     }
@@ -123,7 +123,7 @@ namespace AliceHat.Services
             {
                 if (update.Message?.Text != null && update.Message.Text != "")
                 {
-                    var input = update.Message.Text;
+                    string input = update.Message.Text;
 
                     if (input == "/word")
                     {
@@ -140,7 +140,7 @@ namespace AliceHat.Services
                     }
                     else
                     {
-                        var tokens = Regex.Split(input.ToLower(), @"[\.,\-\s\(\)""'!?—:;]+");
+                        string[] tokens = Regex.Split(input.ToLower(), @"[\.,\-\s\(\)""'!?—:;]+");
                         if (tokens.Count(t => t.Length > 3) > 4)
                         {
                             _telegram.SendTextMessageAsync(
@@ -185,9 +185,9 @@ namespace AliceHat.Services
                 {
                     if (update.CallbackQuery.Data == "show_word")
                     {
-                        var m = $"{GetWordInfo(user.LastWord, true)}\n\n" +
-                                "Напишите мне текстом определение <b>в стиле сканвордов</b>: 1-3 слова по возможности. " +
-                                "\n\n/keep — оставить текущее определение\n/word — пропустить слово";
+                        string m = $"{GetWordInfo(user.LastWord, true)}\n\n" +
+                                   "Напишите мне текстом определение <b>в стиле сканвордов</b>: 1-3 слова по возможности. " +
+                                   "\n\n/keep — оставить текущее определение\n/word — пропустить слово";
 
                         _telegram.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
 
@@ -221,8 +221,8 @@ namespace AliceHat.Services
                             var count = _dbService.Collection<WordData>().Count(w => w.Status == WordStatus.Ready);
                             allCount = $"\nВсего в базе обработанных слов: <b>{count}</b>";
                         }
-                        var m = $"Готово, слово записано!\nВы обработали слов: <b>{user.WordsProcessed}</b>{allCount}\n\n" +
-                                "/word — ещё слово";
+                        string m = $"Готово, слово записано!\nВы обработали слов: <b>{user.WordsProcessed}</b>{allCount}\n\n" +
+                                   "/word — ещё слово";
 
                         _telegram.EditMessageReplyMarkupAsync(
                             new ChatId(userId.Value),
@@ -243,10 +243,10 @@ namespace AliceHat.Services
             if (forceWord.IsNullOrEmpty())
             {
                 // select random word
-                var wordsCount = _dbService.Collection<WordData>()
+                int wordsCount = _dbService.Collection<WordData>()
                     .Count(w => w.Status == WordStatus.Untouched);
 
-                var index = _random.Next(0, wordsCount);
+                int index = _random.Next(0, wordsCount);
 
                 word = _dbService.Collection<WordData>()
                     .Where(w => w.Status == WordStatus.Untouched)
@@ -270,8 +270,8 @@ namespace AliceHat.Services
             _dbService.Update(user);
             
             // send message
-            var m = $"{(skipped ? "Предыдущее слово пропущено. " : "")}Следующее слово:\n\n{GetWordInfo(word, false)}" +
-                    "\n\nМожете подумать, что это, а затем нажать кнопку ниже и узнать ответ.";
+            string m = $"{(skipped ? "Предыдущее слово пропущено. " : "")}Следующее слово:\n\n{GetWordInfo(word, false)}" +
+                       "\n\nМожете подумать, что это, а затем нажать кнопку ниже и узнать ответ.";
             
             _telegram.SendTextMessageAsync(
                 new ChatId(int.Parse(user.Id)),

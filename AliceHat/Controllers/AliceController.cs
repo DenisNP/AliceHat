@@ -95,13 +95,27 @@ namespace AliceHat.Controllers
             }
 
             Console.WriteLine($"REQUEST:\n{JsonConvert.SerializeObject(request, ConverterSettings)}\n");
-            
-            AliceResponse response = _aliceService.HandleRequest(request);
-            string stringResponse = JsonConvert.SerializeObject(response, ConverterSettings);
 
-            Console.WriteLine($"RESPONSE:\n{stringResponse}\n");
+            try
+            {
+                AliceResponse response = _aliceService.HandleRequest(request);
+                string stringResponse = JsonConvert.SerializeObject(response, ConverterSettings);
+
+                Console.WriteLine($"RESPONSE:\n{stringResponse}\n");
             
-            return Response.WriteAsync(stringResponse);
+                return Response.WriteAsync(stringResponse);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+
+                return Response.WriteAsync(
+                    JsonConvert.SerializeObject(
+                        new Phrase("Возникла какая-то ошибка, разработчик уже уведомлён").Generate(request),
+                        ConverterSettings
+                    )
+                );
+            }
         }
     }
 }

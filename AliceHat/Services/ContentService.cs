@@ -25,7 +25,7 @@ namespace AliceHat.Services
         {
             _logger.LogInformation("Loading words");
 
-            var allWords = _dbService.Collection<WordData>()
+            List<WordData> allWords = _dbService.Collection<WordData>()
                 .Where(w => w.Status == WordStatus.Ready)
                 .ToList();
             
@@ -42,13 +42,13 @@ namespace AliceHat.Services
         
         public List<WordData> GetByComplexity(int wordsCount, Complexity complexity, List<string> excludeIds = null)
         {
-            var wordsAvailable = _words[complexity];
+            List<WordData> wordsAvailable = _words[complexity];
             if (wordsAvailable.Count < wordsCount)
                 throw new ArgumentException("There are not enough words in storage");
 
             var selectedIndexes = new HashSet<int>();
             var selectedWords = new List<WordData>();
-            var operationsLeft = AllowedOperations;
+            int operationsLeft = AllowedOperations;
 
             // check and add new index to pool
             void CheckAddIndex(int i)
@@ -70,7 +70,7 @@ namespace AliceHat.Services
             while (operationsLeft-- > 0 && selectedWords.Count < wordsCount)
             {
                 // check if index was already selected
-                var randomIdx = random.Next(0, wordsAvailable.Count);
+                int randomIdx = random.Next(0, wordsAvailable.Count);
                 CheckAddIndex(randomIdx);
             }
             

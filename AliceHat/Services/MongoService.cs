@@ -26,11 +26,11 @@ namespace AliceHat.Services
         {
             _getCollectionName = typeToCollection;
             
-            var connectionUrl = Environment.GetEnvironmentVariable("MONGO_URL") ?? $"mongodb://localhost:27017/{dbName}";
+            string connectionUrl = Environment.GetEnvironmentVariable("MONGO_URL") ?? $"mongodb://localhost:27017/{dbName}";
             var client = new MongoClient(connectionUrl);
             _db = client.GetDatabase(dbName);
 
-            var isMongoLive = _db.RunCommandAsync((Command<BsonDocument>)"{ping:1}").Wait(5000);
+            bool isMongoLive = _db.RunCommandAsync((Command<BsonDocument>)"{ping:1}").Wait(5000);
             if (isMongoLive)
             {
                 _logger.LogInformation($"MongoDB connected: {_db.DatabaseNamespace.DatabaseName}");
@@ -44,7 +44,7 @@ namespace AliceHat.Services
 
         public T ById<T>(string id, bool allowNull = true, string? collection = null) where T : IIdentity
         {
-            var col = GetCollection<T>(collection);
+            IMongoCollection<T> col = GetCollection<T>(collection);
             T? obj = col.AsQueryable().FirstOrDefault(x => x.Id == id);
             if (obj == null && !allowNull)
             {
@@ -63,13 +63,13 @@ namespace AliceHat.Services
 
         public void Update<T>(T document, string? collection = null) where T : IIdentity
         {
-            var filter = Builders<T>.Filter.Eq(x => x.Id, document.Id);
+            FilterDefinition<T> filter = Builders<T>.Filter.Eq(x => x.Id, document.Id);
             GetCollection<T>(collection).ReplaceOne(filter, document, new ReplaceOptions {IsUpsert = true});
         }
 
         public void UpdateAsync<T>(T document, string? collection = null) where T : IIdentity
         {
-            var filter = Builders<T>.Filter.Eq(x => x.Id, document.Id);
+            FilterDefinition<T> filter = Builders<T>.Filter.Eq(x => x.Id, document.Id);
             GetCollection<T>(collection).ReplaceOneAsync(filter, document, new ReplaceOptions {IsUpsert = true});
         }
 
@@ -80,14 +80,14 @@ namespace AliceHat.Services
             string? collection = null
         ) where TDocument : IIdentity
         {
-            var update = Builders<TDocument>.Update.Push(expression, value);
-            var filter = Builders<TDocument>.Filter.Eq(x => x.Id, docId);
+            UpdateDefinition<TDocument> update = Builders<TDocument>.Update.Push(expression, value);
+            FilterDefinition<TDocument> filter = Builders<TDocument>.Filter.Eq(x => x.Id, docId);
             GetCollection<TDocument>(collection).FindOneAndUpdateAsync(filter, update);
         }
 
         public void DeleteAsync<T>(string id, string? collection = null) where T : IIdentity
         {
-            var filter = Builders<T>.Filter.Eq(x => x.Id, id);
+            FilterDefinition<T> filter = Builders<T>.Filter.Eq(x => x.Id, id);
             GetCollection<T>(collection).DeleteOneAsync(filter);
         }
         

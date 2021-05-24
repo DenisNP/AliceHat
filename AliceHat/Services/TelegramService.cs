@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using AliceHat.Models;
@@ -55,7 +56,7 @@ namespace AliceHat.Services
 
         public void SendAll(string text)
         {
-            var allUsers = _dbService.Collection<TgUser>().ToList();
+            List<TgUser> allUsers = _dbService.Collection<TgUser>().ToList();
 
             foreach (TgUser user in allUsers) 
                 _telegram.SendTextMessageAsync(new ChatId(int.Parse(user.Id)), text, ParseMode.Html);

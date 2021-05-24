@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using AliceHat.Models;
 using AliceHat.Models.Alice;
+using AliceHat.Models.Alice.Abstract;
 using AliceHat.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +13,7 @@ using Newtonsoft.Json.Serialization;
 namespace AliceHat.Controllers
 {
     [ApiController]
-    [Route("/")]
+    [Route("/alice")]
     public class AliceController : ControllerBase
     {
         private static readonly JsonSerializerSettings ConverterSettings = new JsonSerializerSettings
@@ -24,53 +25,10 @@ namespace AliceHat.Controllers
             NullValueHandling = NullValueHandling.Include
         };
         private readonly AliceService _aliceService;
-        private readonly ContentService _contentService;
-        private readonly TelegramService _telegramService;
 
-        public AliceController(AliceService aliceService, ContentService contentService, TelegramService telegramService)
+        public AliceController(AliceService aliceService)
         {
             _aliceService = aliceService;
-            _contentService = contentService;
-            _telegramService = telegramService;
-        }
-        
-        [HttpGet]
-        public string Get()
-        {
-            return "It works!";
-        }
-
-        [HttpGet("/word/{complexity}")]
-        public ContentResult Word(string complexity)
-        {
-            var c = Enum.Parse<Complexity>(complexity);
-            var w = _contentService.GetByComplexity(1, c);
-            var text = $"<p>{w[0].Definition}</p><p><font color='white'>{w[0].Word}</font></p>";
-            
-            return new ContentResult
-            {
-                ContentType = "text/html",
-                Content = $"<html><head><meta charset=\"utf-8\"></head><body>{text}</body></html>"
-            };
-        }
-
-        [HttpGet("/send")]
-        public ContentResult SendToAll([FromQuery(Name = "text")] string text, [FromQuery(Name="me")] int me)
-        {
-            if (me == 0)
-            {
-                _telegramService.SendAll(text.Replace(@"\n", "\n"));
-            }
-            else
-            {
-                _telegramService.SendMe(text.Replace(@"\n", "\n"));
-            }
-
-            return new ContentResult
-            {
-                ContentType = "text/html",
-                Content = $"<html><head><meta charset=\"utf-8\"></head><body>{text}</body></html>"
-            };
         }
 
         [HttpPost]
@@ -89,7 +47,7 @@ namespace AliceHat.Controllers
             
             if (request.IsPing())
             {
-                var pong = new AliceResponse(request).ToPong();
+                AliceResponseBase<UserState, SessionState> pong = new AliceResponse(request).ToPong();
                 string pongResponse = JsonConvert.SerializeObject(pong, ConverterSettings);
                 return Response.WriteAsync(pongResponse);
             }

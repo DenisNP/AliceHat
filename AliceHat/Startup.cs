@@ -19,6 +19,7 @@ namespace AliceHat
             services.AddSingleton<ContentService>();
             services.AddSingleton<AliceService>();
             services.AddSingleton<TelegramService>();
+            services.AddSingleton<GameplayService>();
         }
 
         public void Configure(IApplicationBuilder app, IDbService dbService, ContentService contentService, TelegramService telegramService)
@@ -28,7 +29,6 @@ namespace AliceHat
             
             dbService.Init("alicehat", type =>
             {
-                if (type == typeof(User)) return "users";
                 if (type == typeof(WordData)) return "words";
                 if (type == typeof(TgUser)) return "tgusers";
                 throw new ArgumentOutOfRangeException(nameof(type), $"No collection for type: {type.FullName}");

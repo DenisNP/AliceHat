@@ -98,8 +98,8 @@ namespace AliceHat.Models.Alice.Abstract
     }
 
     public class AliceResponseBase<TUserState, TSessionState>
-        where TUserState : class, ICloneable<TUserState>, new()
-        where TSessionState : class, ICloneable<TSessionState>, new()
+        where TUserState : class, new()
+        where TSessionState : class, new()
     {
         public AliceEmpty StartAccountLinking { get; set; }
         public Response Response { get; set; } = new Response();
@@ -117,8 +117,8 @@ namespace AliceHat.Models.Alice.Abstract
         {
             Session = request.Session;
             Version = request.Version;
-            SessionState = sessionState ?? request.State.Session.Clone();
-            UserStateUpdate = userState ?? request.State.User.Clone();
+            SessionState = sessionState ?? request.State.Session;
+            UserStateUpdate = userState ?? request.State.User;
         }
         
         public AliceResponseBase<TUserState, TSessionState> ToAuthorizationResponse()

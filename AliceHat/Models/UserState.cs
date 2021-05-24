@@ -1,12 +1,9 @@
-﻿using AliceHat.Models.Alice.Abstract;
+﻿using System.Collections.Generic;
 
 namespace AliceHat.Models
 {
-    public class UserState : ICloneable<UserState>
+    public class UserState
     {
-        public UserState Clone()
-        {
-            return new();
-        }
+        public List<string> WordIdsGot { get; set; } = new();
     }
 }

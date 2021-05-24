@@ -31,6 +31,8 @@ namespace AliceHat.Services
             
             foreach (WordData wordData in allWords)
             {
+                wordData.Complexity = Complexity.Medium; // TODO complexity disabled
+                
                 if (!_words.ContainsKey(wordData.Complexity))
                     _words.Add(wordData.Complexity, new List<WordData>());
                 
@@ -40,8 +42,9 @@ namespace AliceHat.Services
             _logger.LogInformation($"Done. Words loaded: {_words.Values.Sum(l => l.Count)}");
         }
         
-        public List<WordData> GetByComplexity(int wordsCount, Complexity complexity, List<string> excludeIds = null)
+        public List<WordData> GetByComplexity(int wordsCount, /*Complexity complexity, */List<string> excludeIds = null)
         {
+            var complexity = Complexity.Medium; // TODO complexity disabled
             List<WordData> wordsAvailable = _words[complexity];
             if (wordsAvailable.Count < wordsCount)
                 throw new ArgumentException("There are not enough words in storage");

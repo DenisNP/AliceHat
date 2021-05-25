@@ -20,8 +20,15 @@ namespace AliceHat.Services
         
         public AliceResponse HandleRequest(AliceRequest request)
         {
+            if (request.Request.Command.ToLower() == "сбросить состояние")
+            {
+                request.State.User = new UserState();
+                request.State.Session = new SessionState();
+                return Enter(request);
+            }
+            
             // enter
-            if (request.State.Session.Step == SessionStep.None)
+            if (request.State.Session.Step == SessionStep.None || request.IsEnter())
                 return Enter(request);
 
             // help
@@ -186,7 +193,7 @@ namespace AliceHat.Services
                     _prepareButtons
                 ),
                 _ => new Phrase(
-                    "Привет, сыграем в шляпу. Перечисли имена игроков:",
+                    "Привет! Чтобы начать игру, перечисли имена игроков:",
                     _prepareButtons
                 )
             };

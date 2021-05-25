@@ -85,7 +85,7 @@ namespace AliceHat.Services
 
         public bool Answer(UserState user, SessionState session, string answer)
         {
-            bool right = session.CurrentWord.Word == answer;
+            bool right = Utils.LevenshteinMatchRatio(session.CurrentWord.Word, answer) >= 0.65;
             if (right)
                 session.CurrentPlayer.Score++;
 

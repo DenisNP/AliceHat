@@ -117,9 +117,11 @@ namespace AliceHat.Services
                 ? "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/7fbd83e1-7c22-468d-a8fe-8f0439000fd6.opus]"
                 : "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/ac858f28-3c34-403c-81c7-5d64449e4ea7.opus]";
 
-            string prefix = sound + (request.HasScreen()
-                ? $"Правильный ответ: {word.ToUpper()}.\n\n[p|300]"
-                : $"Твой ответ: {wordSaid.ToUpper()}, а правильный: {word.ToUpper()}.\n\n[p|300]");
+            string prefix = sound;
+            if (!right)
+                prefix += request.HasScreen()
+                    ? $"Правильный ответ: {word.ToUpper()}.\n\n[p|300]"
+                    : $"Твой ответ: {wordSaid.ToUpper()}, а правильный: {word.ToUpper()}.\n\n[p|300]";
 
             var phrase = new Phrase(prefix);
             if (state.CurrentWord == null)

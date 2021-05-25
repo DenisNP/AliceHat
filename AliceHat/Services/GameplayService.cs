@@ -135,8 +135,10 @@ namespace AliceHat.Services
                     return letter.ToLower() + "э";
                 case "К": case "Х": case "Ш": case "Щ": case "А":
                     return letter.ToLower() + "а";
-                case "Л": case "М": case "Н": case "Р": case "С": case "Ф":
+                case "Л": case "М": case "Н": case "Р": case "С":
                     return "э" + letter.ToLower();
+                case "Ф":
+                    return "эфф";
                 case "И":
                     return "ии";
                 case "О":

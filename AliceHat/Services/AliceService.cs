@@ -105,7 +105,7 @@ namespace AliceHat.Services
         {
             SessionState state = request.State.Session;
             string word = state.CurrentWord.Word;
-            bool right = _gameplayService.Answer(request.State.Session, request.Request.Nlu.Tokens.FirstOrDefault());
+            bool right = _gameplayService.Answer(request.State.User, request.State.Session, request.Request.Nlu.Tokens.FirstOrDefault());
             string prefix = right
                 ? "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/7fbd83e1-7c22-468d-a8fe-8f0439000fd6.opus]"
                 : "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/ac858f28-3c34-403c-81c7-5d64449e4ea7.opus]" +
@@ -116,7 +116,7 @@ namespace AliceHat.Services
             {
                 // geme finished
                 phrase += new Phrase(
-                    $"Игра завершена!\n{GameplayService.ReadScore(state)}\n\nХочешь начать новую игру?",
+                    $"Игра завершена!\n{GameplayService.ReadScore(request.State.User, state)}\n\nХочешь начать новую игру?",
                     _yesNoButtons
                 );
                 return phrase.Generate(request);

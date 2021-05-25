@@ -83,7 +83,7 @@ namespace AliceHat.Services
             NextWord(session);
         }
 
-        public bool Answer(SessionState session, string answer)
+        public bool Answer(UserState user, SessionState session, string answer)
         {
             bool right = session.CurrentWord.Word == answer;
             if (right)
@@ -95,6 +95,10 @@ namespace AliceHat.Services
             }
             else
             {
+                // single player, write score
+                if (session.Players.Length == 1) 
+                    user.TotalScore += session.Players.First().Score;
+                
                 session.CurrentWord = null;
                 session.Step = SessionStep.AwaitRestart;
             }
@@ -187,10 +191,11 @@ namespace AliceHat.Services
             return $"{nameText}: [p|500]\n{state.CurrentWord.Definition.ToUpperFirst()}, {letterText}.";
         }
 
-        public static string ReadScore(SessionState state)
+        public static string ReadScore(UserState user, SessionState state)
         {
             if (state.Players.Length == 1)
-                return $"У тебя {state.Players.First().Score.ToPhrase("очко", "очка", "очков")}";
+                return $"У тебя {state.Players.First().Score.ToPhrase("очко", "очка", "очков")} за игру игру, " +
+                       $"и {user.TotalScore.ToPhrase("очко", "очка", "очков")} всего!";
             
             return string.Join(
                 "\n",

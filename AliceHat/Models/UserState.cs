@@ -7,5 +7,6 @@ namespace AliceHat.Models
     {
         public DateTime LastEnter { get; set; }
         public List<string> WordIdsGot { get; set; } = new();
+        public int TotalScore { get; set; }
     }
 }

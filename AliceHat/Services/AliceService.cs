@@ -69,7 +69,11 @@ namespace AliceHat.Services
 
         private AliceResponse Repeat(AliceRequest request)
         {
-            var phrase = new Phrase(GameplayService.ReadWord(request.State.Session, ReadMode.Repeat), _ingameButtons);
+            var phrase = new Phrase(
+                "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/1c5d73a2-0ec2-420e-8745-66ffc77a6ae2.opus]"+
+                GameplayService.ReadWord(request.State.Session, ReadMode.Repeat),
+                _ingameButtons
+            );
             return phrase.Generate(request);
         }
 
@@ -91,6 +95,7 @@ namespace AliceHat.Services
             {
                 _gameplayService.Resume(state);
                 return new Phrase(
+                        "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/1c5d73a2-0ec2-420e-8745-66ffc77a6ae2.opus]"+
                         GameplayService.ReadWord(state, ReadMode.Continue),
                         _ingameButtons
                     )
@@ -116,7 +121,8 @@ namespace AliceHat.Services
             {
                 // geme finished
                 phrase += new Phrase(
-                    $"Игра завершена!\n{GameplayService.ReadScore(request.State.User, state)}\n\nХочешь начать новую игру?",
+                    "[audio|alice-sounds-game-win-3.opus]Игра завершена!\n" +
+                    $"{GameplayService.ReadScore(request.State.User, state)}\n\nХочешь начать новую игру?",
                     _yesNoButtons
                 );
                 return phrase.Generate(request);
@@ -124,7 +130,11 @@ namespace AliceHat.Services
             else
             {
                 // continue game
-                phrase += new Phrase(GameplayService.ReadWord(request.State.Session), _ingameButtons);
+                phrase += new Phrase(
+                    "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/1c5d73a2-0ec2-420e-8745-66ffc77a6ae2.opus]" +
+                    GameplayService.ReadWord(request.State.Session),
+                    _ingameButtons
+                );
                 return phrase.Generate(request);
             }
         }
@@ -183,16 +193,19 @@ namespace AliceHat.Services
             Phrase phrase = restart switch
             {
                 true => new Phrase(
+                    "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/cb19ca47-2ef6-4788-b09f-0d47776e4de3.opus]" +
                     "Начинаем новую игру. Перечисли имена игроков:",
                     _prepareButtons
                 ),
                 false when newUser => new Phrase(
+                    "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/cb19ca47-2ef6-4788-b09f-0d47776e4de3.opus]" +
                     "Привет. В этой игре я буду загадывать тебе или вам с друзьями определения, " +
                     "а вы должны называть слова. Кто больше угадал — тот и выиграл.\n\n" +
                     "Для начала перечисли имена игроков:",
                     _prepareButtons
                 ),
                 _ => new Phrase(
+                    "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/cb19ca47-2ef6-4788-b09f-0d47776e4de3.opus]" +
                     "Привет! Чтобы начать игру, перечисли имена игроков:",
                     _prepareButtons
                 )
@@ -231,7 +244,8 @@ namespace AliceHat.Services
             // read first word
             string playersNum = names.Count.ToPhrase("игрок", "игрока", "игроков");
             string startPhrase = $"Отлично, {playersNum}, начинаем. " +
-                                 $"[p|500]\n\n{GameplayService.ReadWord(state, ReadMode.First)}";
+                                 $"[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/1c5d73a2-0ec2-420e-8745-66ffc77a6ae2.opus]" +
+                                 $"\n\n{GameplayService.ReadWord(state, ReadMode.First)}";
 
             return new Phrase(startPhrase, _ingameButtons).Generate(request);
         }

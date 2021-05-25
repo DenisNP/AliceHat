@@ -194,7 +194,7 @@ namespace AliceHat.Services
         public static string ReadScore(UserState user, SessionState state)
         {
             if (state.Players.Length == 1)
-                return $"У тебя {state.Players.First().Score.ToPhrase("очко", "очка", "очков")} за игру игру, " +
+                return $"У тебя {state.Players.First().Score.ToPhrase("очко", "очка", "очков")} за эту игру, " +
                        $"и {user.TotalScore.ToPhrase("очко", "очка", "очков")} всего!";
             
             return string.Join(

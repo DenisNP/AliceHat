@@ -67,10 +67,10 @@ namespace AliceHat.Services
 
             int wordsCount = playerNames.Length switch
             {
-                1 => 10,
-                >= 2 and <= 3 => 5,
-                4 => 4,
-                _ => 3
+                1 => 5,
+                2 => 4,
+                >= 3 and <= 4 => 3,
+                _ => 2
             };
 
             session.CurrentPlayerIdx = session.Players.Length - 1;
@@ -189,6 +189,9 @@ namespace AliceHat.Services
 
         public static string ReadScore(SessionState state)
         {
+            if (state.Players.Length == 1)
+                return $"У тебя {state.Players.First().Score.ToPhrase("очко", "очка", "очков")}";
+            
             return string.Join(
                 "\n",
                 state.Players

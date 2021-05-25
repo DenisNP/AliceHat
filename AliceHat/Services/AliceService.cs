@@ -69,7 +69,7 @@ namespace AliceHat.Services
 
         private AliceResponse Repeat(AliceRequest request)
         {
-            var phrase = new Phrase(GameplayService.ReadWord(request.State.Session), _ingameButtons);
+            var phrase = new Phrase(GameplayService.ReadWord(request.State.Session, ReadMode.Repeat), _ingameButtons);
             return phrase.Generate(request);
         }
 
@@ -116,7 +116,7 @@ namespace AliceHat.Services
             {
                 // geme finished
                 phrase += new Phrase(
-                    $"Игра завершена!\n\n{GameplayService.ReadScore(state)}\n\nХотите начать новую игру?",
+                    $"Игра завершена!\n{GameplayService.ReadScore(state)}\n\nХочешь начать новую игру?",
                     _yesNoButtons
                 );
                 return phrase.Generate(request);
@@ -231,7 +231,7 @@ namespace AliceHat.Services
             // read first word
             string playersNum = names.Count.ToPhrase("игрок", "игрока", "игроков");
             string startPhrase = $"Отлично, {playersNum}, начинаем. " +
-                                 $"[p|500]\n\n{GameplayService.ReadWord(state)}";
+                                 $"[p|500]\n\n{GameplayService.ReadWord(state, ReadMode.First)}";
 
             return new Phrase(startPhrase, _ingameButtons).Generate(request);
         }

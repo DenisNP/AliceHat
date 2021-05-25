@@ -69,9 +69,9 @@ namespace AliceHat.Services
             int wordsCount = playerNames.Length switch
             {
                 1 => 7,
-                2 => 5,
-                3 => 4,
-                _ => 3
+                2 => 10,
+                3 => 12,
+                _ => 3 * playerNames.Length
             };
 
             session.CurrentPlayerIdx = session.Players.Length - 1;

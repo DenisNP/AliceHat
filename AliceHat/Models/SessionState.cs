@@ -15,6 +15,14 @@ namespace AliceHat.Models
         public Player CurrentPlayer => Players != null && Players.Length > CurrentPlayerIdx
             ? Players[CurrentPlayerIdx]
             : null;
+
+        public void Clear()
+        {
+            CurrentWord = null;
+            Players = null;
+            CurrentPlayerIdx = 0;
+            WordsLeft = null;
+        }
     }
 
     public class Player

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using AliceHat.Models;
 
 namespace AliceHat.Services
@@ -12,16 +13,22 @@ namespace AliceHat.Services
             _contentService = contentService;
         }
         
-        public void Enter(UserState user, SessionState session)
+        public bool EnterIsNewUser(UserState user, SessionState session)
         {
+            bool newUser = user.LastEnter < DateTime.Now - TimeSpan.FromDays(15);
+            
+            user.LastEnter = DateTime.Now;
+            session.Clear();
             session.Step = SessionStep.AwaitNames;
+
+            return newUser;
         }
 
         public void Start(UserState user, SessionState session, string[] playerNames)
         {
             session.Players = playerNames.Select(name => new Player
             {
-                Name = name,
+                Name = name.ToLower().ToUpperFirst(),
                 Score = 0
             }).ToArray();
 

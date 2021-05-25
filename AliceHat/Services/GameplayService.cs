@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using AliceHat.Models;
+using AliceHat.Models.Abstract;
 
 namespace AliceHat.Services
 {
@@ -151,7 +152,7 @@ namespace AliceHat.Services
             }
         }
         
-        public static string ReadWord(SessionState state, ReadMode readMode = ReadMode.Normal)
+        public static string ReadWord(SessionState state, ISoundEngine soundEngine, ReadMode readMode = ReadMode.Normal)
         {
             string infix;
             if (state.Players.Length == 1)
@@ -186,9 +187,10 @@ namespace AliceHat.Services
             }
 
             string firstLetter = state.CurrentWord.Word.First().ToString().ToUpper();
-            var letterText = $"{LetterPrefixes.PickRandom()} [screen|{firstLetter}][voice|{GetLetterTts(firstLetter)}]";
+            var letterText = $"{LetterPrefixes.PickRandom()} {soundEngine.GetLetterPronounce(firstLetter, GetLetterTts(firstLetter))}";
             string nameText = state.Players.Length == 1 ? infix.ToUpperFirst() : $"{state.CurrentPlayer.Name}, {infix}";
-            return $"{nameText}: [p|500]\n{state.CurrentWord.Definition.ToUpperFirst()}, {letterText}.";
+            return $"{nameText}: {soundEngine.GetPause(500)}\n{soundEngine.GetNextWordSound()}" +
+                   $"{state.CurrentWord.Definition.ToUpperFirst()}, {letterText}.";
         }
 
         public static string ReadScore(UserState user, SessionState state)

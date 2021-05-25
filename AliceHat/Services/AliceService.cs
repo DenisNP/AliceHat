@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AliceHat.Models;
+using AliceHat.Models.Abstract;
 using AliceHat.Models.Alice;
 
 namespace AliceHat.Services
@@ -12,6 +13,8 @@ namespace AliceHat.Services
         private readonly string[] _prepareButtons = {"Только я", "Заново", "Помощь", "Выход"};
         private readonly string[] _ingameButtons = {"Повтори", "Не знаю", "Начать с начала", "Выход"};
         private readonly string[] _yesNoButtons = {"Да", "Нет"};
+
+        private readonly ISoundEngine _soundEngine = new AliceSoundEngine();
         
         public AliceService(GameplayService gameplayService)
         {
@@ -70,8 +73,7 @@ namespace AliceHat.Services
         private AliceResponse Repeat(AliceRequest request)
         {
             var phrase = new Phrase(
-                "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/1c5d73a2-0ec2-420e-8745-66ffc77a6ae2.opus]"+
-                GameplayService.ReadWord(request.State.Session, ReadMode.Repeat),
+                GameplayService.ReadWord(request.State.Session, _soundEngine, ReadMode.Repeat),
                 _ingameButtons
             );
             return phrase.Generate(request);
@@ -95,8 +97,7 @@ namespace AliceHat.Services
             {
                 _gameplayService.Resume(state);
                 return new Phrase(
-                        "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/1c5d73a2-0ec2-420e-8745-66ffc77a6ae2.opus]"+
-                        GameplayService.ReadWord(state, ReadMode.Continue),
+                        GameplayService.ReadWord(state, _soundEngine, ReadMode.Continue),
                         _ingameButtons
                     )
                     .Generate(request);
@@ -131,8 +132,7 @@ namespace AliceHat.Services
             {
                 // continue game
                 phrase += new Phrase(
-                    "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/1c5d73a2-0ec2-420e-8745-66ffc77a6ae2.opus]" +
-                    GameplayService.ReadWord(request.State.Session),
+                    GameplayService.ReadWord(request.State.Session, _soundEngine),
                     _ingameButtons
                 );
                 return phrase.Generate(request);
@@ -244,8 +244,7 @@ namespace AliceHat.Services
             // read first word
             string playersNum = names.Count.ToPhrase("игрок", "игрока", "игроков");
             string startPhrase = $"Отлично, {playersNum}, начинаем. " +
-                                 $"[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/1c5d73a2-0ec2-420e-8745-66ffc77a6ae2.opus]" +
-                                 $"\n\n{GameplayService.ReadWord(state, ReadMode.First)}";
+                                 $"\n\n{GameplayService.ReadWord(state, _soundEngine, ReadMode.First)}";
 
             return new Phrase(startPhrase, _ingameButtons).Generate(request);
         }

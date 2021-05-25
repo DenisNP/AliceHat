@@ -9,6 +9,9 @@ namespace AliceHat.Services
     public class AliceService
     {
         private readonly GameplayService _gameplayService;
+        private readonly string[] _prepareButtons = {"Только я", "Заново", "Помощь", "Выход"};
+        private readonly string[] _ingameButtons = {"Повтори", "Не знаю", "Начать с начала", "Выход"};
+        private readonly string[] _yesNoButtons = {"Да", "Нет"};
         
         public AliceService(GameplayService gameplayService)
         {
@@ -35,11 +38,21 @@ namespace AliceHat.Services
 
             // setup game
             if (request.State.Session.Step == SessionStep.AwaitNames)
+            {
+                if (request.HasIntent("restart"))
+                    return Enter(request, true);
+                
                 return SetUpGame(request);
+            }
             
             // answer
             if (request.State.Session.Step == SessionStep.Game)
+            {
+                if (request.HasIntent("repeat"))
+                    return Repeat(request);
+                
                 return Answer(request);
+            }
 
             if (request.State.Session.Step == SessionStep.AwaitRestart)
                 return MaybeRestart(request);
@@ -47,46 +60,136 @@ namespace AliceHat.Services
             throw new ArgumentOutOfRangeException();
         }
 
+        private AliceResponse Repeat(AliceRequest request)
+        {
+            var phrase = new Phrase(GameplayService.ReadWord(request.State.Session), _ingameButtons);
+            return phrase.Generate(request);
+        }
+
         private AliceResponse Restart(AliceRequest request)
         {
-            throw new NotImplementedException();
+            var phrase = new Phrase("Ты точно хочешь закончить эту игру и начать новую?", _yesNoButtons);
+            _gameplayService.PauseForRestart(request.State.Session);
+            return phrase.Generate(request);
         }
 
         private AliceResponse MaybeRestart(AliceRequest request)
         {
-            throw new NotImplementedException();
+            if (request.HasIntent("yes"))
+                return Enter(request, restart: true);
+            
+            // continue game or exit
+            SessionState state = request.State.Session;
+            if (state.CurrentWord != null)
+            {
+                _gameplayService.Resume(state);
+                return new Phrase(
+                        GameplayService.ReadWord(state, ReadMode.Continue),
+                        _ingameButtons
+                    )
+                    .Generate(request);
+            }
+            
+            // exit game
+            return Exit(request);
         }
 
         private AliceResponse Answer(AliceRequest request)
         {
-            throw new NotImplementedException();
+            SessionState state = request.State.Session;
+            string word = state.CurrentWord.Word;
+            bool right = _gameplayService.Answer(request.State.Session, request.Request.Nlu.Tokens.FirstOrDefault());
+            string prefix = right
+                ? "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/7fbd83e1-7c22-468d-a8fe-8f0439000fd6.opus]"
+                : "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/ac858f28-3c34-403c-81c7-5d64449e4ea7.opus]" +
+                  $"Правильный ответ: {word.ToLower()}.\n\n[p|300]";
+
+            var phrase = new Phrase(prefix);
+            if (state.CurrentWord == null)
+            {
+                // geme finished
+                phrase += new Phrase(
+                    $"Игра завершена!\n\n{GameplayService.ReadScore(state)}\n\nХотите начать новую игру?",
+                    _yesNoButtons
+                );
+                return phrase.Generate(request);
+            }
+            else
+            {
+                // continue game
+                phrase += new Phrase(GameplayService.ReadWord(request.State.Session), _ingameButtons);
+                return phrase.Generate(request);
+            }
         }
 
         private AliceResponse Exit(AliceRequest request)
         {
-            throw new NotImplementedException();
+            var phrase = new Phrase("Выхожу из игры. Возвращайся!");
+            AliceResponse response = phrase.Generate(request);
+            response.Response.EndSession = true;
+
+            return response;
         }
 
         private AliceResponse Help(AliceRequest request)
         {
-            throw new NotImplementedException();
+            Phrase phrase;
+            switch (request.State.Session.Step)
+            {
+                case SessionStep.AwaitNames:
+                    phrase = new Phrase(
+                        "Ты в игре «Шляпа», в которой я буду говорить тебе или вам с друзьями короткие определения, " +
+                        "а вы должны отгадывать слова. Прямо сейчас я жду от тебя список имён игроков, " +
+                        "либо можешь сказать, что играть будешь только ты.",
+                        _prepareButtons
+                    );
+                    break;
+                case SessionStep.Game:
+                    SessionState state = request.State.Session;
+                    bool multi = state.Players.Length > 1;
+                    phrase = new Phrase(
+                        $"{(multi ? "Вы" : "Ты")} в игре «Шляпа», в которой я говорю " +
+                        $"{(multi ? "вам" : "тебе")} короткие определения, " +
+                        $"а {(multi ? "вы отгадываете" : "ты отгадываешь")} слова. " +
+                        $"Прямо сейчас я дала {(multi ? $"игроку по имени {state.CurrentPlayer.Name}" : "тебе")} " +
+                        "очередное задание, и жду ответ. Можно попросить меня повторить задание, если нужно.",
+                        _ingameButtons
+                    );
+                    break;
+                case SessionStep.AwaitRestart:
+                    phrase = new Phrase(
+                        "Я жду от тебя ответа на вопрос: хочешь ли ты начать новую игру?",
+                        _yesNoButtons
+                    );
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            return phrase.Generate(request);
         }
 
-        private AliceResponse Enter(AliceRequest request)
+        private AliceResponse Enter(AliceRequest request, bool restart = false)
         {
             bool newUser = _gameplayService.EnterIsNewUser(request.State.User, request.State.Session);
 
-            Phrase phrase = newUser
-                ? new Phrase(
+            Phrase phrase = restart switch
+            {
+                true => new Phrase(
+                    "Начинаем новую игру. Перечисли имена игроков:",
+                    _prepareButtons
+                ),
+                false when newUser => new Phrase(
                     "Привет. В этой игре я буду загадывать тебе или вам с друзьями определения, " +
                     "а вы должны называть слова. Кто больше угадал — тот и выиграл.\n\n" +
-                    "Для начала перечисли имена игроков.",
-                    new[] {"Только я", "Помощь", "Выход"}
+                    "Для начала перечисли имена игроков:",
+                    _prepareButtons
+                ),
+                _ => new Phrase(
+                    "Привет, сыграем в шляпу. Перечисли имена игроков:",
+                    _prepareButtons
                 )
-                : new Phrase(
-                    "Привет, сыграем в шляпу. Перечисли имена игроков.",
-                    new[] {"Только я", "Помощь", "Выход"}
-                );
+            };
 
             return phrase.Generate(request);
         }
@@ -102,7 +205,7 @@ namespace AliceHat.Services
             {
                 phrase = new Phrase(
                     "Назови подряд имена всех игроков, либо скажи, что играть будешь только ты.",
-                    new[] {"Только я", "Помощь", "Выход"}
+                    _prepareButtons
                 );
                 return phrase.Generate(request);
             }
@@ -110,15 +213,20 @@ namespace AliceHat.Services
             {
                 phrase = new Phrase(
                     "Пока что играть могу не более десяти человек на одном устройстве. Перечисли не более десяти имён.",
-                    new[] {"Помощь", "Выход"}
+                    _prepareButtons
                 );
                 return phrase.Generate(request);
             }
-                
-            _gameplayService.Start(request.State.User, request.State.Session, names.ToArray());
+
+            SessionState state = request.State.Session;
+            _gameplayService.Start(request.State.User, state, names.ToArray());
             
             // read first word
-            
+            string playersNum = names.Count.ToPhrase("игрок", "игрока", "игроков");
+            string startPhrase = $"Отлично, {playersNum}, начинаем. " +
+                                 $"[p|500]\n\n{GameplayService.ReadWord(state)}";
+
+            return new Phrase(startPhrase, _ingameButtons).Generate(request);
         }
     }
 }

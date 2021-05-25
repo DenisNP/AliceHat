@@ -28,6 +28,10 @@ namespace AliceHat.Services
             // exit
             if (request.HasIntent("exit"))
                 return Exit(request);
+            
+            // restart
+            if (request.HasIntent("restart"))
+                return Restart(request);
 
             // setup game
             if (request.State.Session.Step == SessionStep.AwaitNames)
@@ -41,6 +45,11 @@ namespace AliceHat.Services
                 return MaybeRestart(request);
 
             throw new ArgumentOutOfRangeException();
+        }
+
+        private AliceResponse Restart(AliceRequest request)
+        {
+            throw new NotImplementedException();
         }
 
         private AliceResponse MaybeRestart(AliceRequest request)

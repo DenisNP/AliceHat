@@ -8,6 +8,14 @@ namespace AliceHat.Services
     {
         private readonly ContentService _contentService;
         
+        private static readonly string[] InfixesSingle =
+        {
+            "следующее слово",
+            "ещё одно задание",
+            "следующее задание",
+            "ещё одно слово"
+        };
+        
         private static readonly string[] InfixesFirst =
         {
             "слово для тебя",
@@ -142,26 +150,41 @@ namespace AliceHat.Services
         public static string ReadWord(SessionState state, ReadMode readMode = ReadMode.Normal)
         {
             string infix;
-            if (readMode != ReadMode.Normal)
+            if (state.Players.Length == 1)
             {
-                string prefix = readMode switch
+                infix = readMode switch
                 {
-                    ReadMode.First => "первое",
-                    ReadMode.Repeat => "повторяю",
-                    ReadMode.Continue => "",
+                    ReadMode.Normal => InfixesSingle.PickRandom(),
+                    ReadMode.First => "первое задание",
+                    ReadMode.Repeat => "повторяю задание",
+                    ReadMode.Continue => InfixesSingle.PickRandom(),
                     _ => throw new ArgumentOutOfRangeException(nameof(readMode), readMode, null)
                 };
-                
-                infix = $"{prefix} {InfixesFirst.PickRandom()}";
             }
             else
             {
-                infix = InfixesNext.PickRandom();
+                if (readMode != ReadMode.Normal)
+                {
+                    string prefix = readMode switch
+                    {
+                        ReadMode.First => "первое",
+                        ReadMode.Repeat => "повторяю",
+                        ReadMode.Continue => "",
+                        _ => throw new ArgumentOutOfRangeException(nameof(readMode), readMode, null)
+                    };
+
+                    infix = $"{prefix} {InfixesFirst.PickRandom()}";
+                }
+                else
+                {
+                    infix = InfixesNext.PickRandom();
+                }
             }
 
             string firstLetter = state.CurrentWord.Word.First().ToString().ToUpper();
             var letterText = $"{LetterPrefixes.PickRandom()} [screen|{firstLetter}][voice|{GetLetterTts(firstLetter)}]";
-            return $"{state.CurrentPlayer.Name}, {infix}: [p|500]\n{state.CurrentWord.Definition.ToUpperFirst()}, {letterText}.";
+            string nameText = state.Players.Length == 1 ? infix.ToUpperFirst() : $"{state.CurrentPlayer.Name}, {infix}";
+            return $"{nameText}: [p|500]\n{state.CurrentWord.Definition.ToUpperFirst()}, {letterText}.";
         }
 
         public static string ReadScore(SessionState state)

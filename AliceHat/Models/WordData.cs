@@ -9,6 +9,7 @@ namespace AliceHat.Models
         public Complexity Complexity { get; set; }
         public WordStatus Status { get; set; }
         public string Definition { get; set; }
+        public string[] Mispronounce { get; set; }
     }
 
     public enum WordStatus

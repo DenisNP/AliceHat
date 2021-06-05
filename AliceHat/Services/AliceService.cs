@@ -11,8 +11,8 @@ namespace AliceHat.Services
     {
         private readonly GameplayService _gameplayService;
         private readonly string[] _prepareButtons = {"Только я", "Заново", "Помощь", "Выход"};
-        private readonly string[] _ingameButtons = {"Повтори", "Не знаю", "Начать с начала", "Выход"};
-        private readonly string[] _yesNoButtons = {"Да", "Нет"};
+        private readonly string[] _ingameButtons = {"Повтори", "Не знаю", "Начать с начала", "Помощь", "Выход" };
+        private readonly string[] _yesNoButtons = {"Да", "Нет", "Помощь" };
 
         private readonly ISoundEngine _soundEngine = new AliceSoundEngine();
         
@@ -176,7 +176,7 @@ namespace AliceHat.Services
                         $"а {(multi ? "вы отгадываете" : "ты отгадываешь")} слова. " +
                         $"Прямо сейчас я дала {(multi ? $"игроку по имени {state.CurrentPlayer.Name}" : "тебе")} " +
                         "очередное задание, и жду на него ответ. Можно попросить меня повторить задание, если нужно или " +
-                        "пропустить его, сказав не знаю.",
+                        "пропустить его, сказав \"Не знаю\".",
                         _ingameButtons
                     );
                     break;
@@ -184,7 +184,7 @@ namespace AliceHat.Services
                     phrase = new Phrase(
                         "Ты в игре «Шляпа», в которой я буду говорить тебе или вам с друзьями" +
                         " короткие определения, а вы должны отгадывать слова." +
-                        "Сейчас ты можешь начать новую игру сказав да и выйти сказав нет",
+                        "Сейчас ты можешь начать новую игру сказав \"Да\" и выйти сказав \"Нет\"",
                         _yesNoButtons
                     );
                     break;

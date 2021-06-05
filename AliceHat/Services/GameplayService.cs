@@ -87,7 +87,9 @@ namespace AliceHat.Services
         public bool Answer(UserState user, SessionState session, string answer)
         {
             bool right = Utils.LevenshteinMatchRatio(session.CurrentWord.Word, answer) >= 0.65;
-            if (right)
+            bool mispronounced = session.CurrentWord.Mispronounce.Contains(answer);
+
+            if (right || mispronounced)
                 session.CurrentPlayer.Score++;
 
             if (session.WordsLeft.Count > 0)

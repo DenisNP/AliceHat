@@ -179,7 +179,7 @@ namespace AliceHat.Services
             if (request.State.Session.Step == SessionStep.Game)
             {
                 phrase = new Phrase(
-                    $"{GameplayService.ReadScore(request.State.User, state)}\n" +
+                    $"{GameplayService.ReadScoreOnDemand(request.State.User, state)}\n" +
                     $"{GameplayService.ReadWord(request.State.Session, _soundEngine, ReadMode.Repeat)}",
                     _ingameButtons
                 );

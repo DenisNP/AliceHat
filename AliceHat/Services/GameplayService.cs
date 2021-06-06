@@ -197,12 +197,28 @@ namespace AliceHat.Services
                    $"{state.CurrentWord.Definition.ToUpperFirst()}, {letterText}.";
         }
 
+        public static string ReadScoreOnDemand(UserState user, SessionState state)
+        {
+            if (state.Players.Length == 1)
+                return
+                    $"Пока что у тебя {state.Players.First().Score.ToPhrase("очко", "очка", "очков")}, " +
+                    $"осталось {state.WordsLeft.Count.ToPhrase("задание", "заданий", "заданий")} ";
+
+            return string.Join(
+                "\n",
+                state.Players
+                    .OrderByDescending(p => p.Score)
+                    .Select(p => $"{p.Name} — {p.Score.ToPhrase("очко", "очка", "очков")}")
+                    .Append($"осталось {state.WordsLeft.Count.ToPhrase("задание", "заданий", "заданий")} "));
+
+        }
+
         public static string ReadScore(UserState user, SessionState state)
         {
             if (state.Players.Length == 1)
                 return $"У тебя {state.Players.First().Score.ToPhrase("очко", "очка", "очков")} за эту игру, " +
                        $"и {user.TotalScore.ToPhrase("очко", "очка", "очков")} всего!";
-            
+
             return string.Join(
                 "\n",
                 state.Players

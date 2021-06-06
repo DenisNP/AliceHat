@@ -203,13 +203,8 @@ namespace AliceHat.Services
                 return
                     $"Пока что у тебя {state.Players.First().Score.ToPhrase("очко", "очка", "очков")}, " +
                     $"осталось {state.WordsLeft.Count.ToPhrase("задание", "заданий", "заданий")} ";
-
-            return string.Join(
-                "\n",
-                state.Players
-                    .OrderByDescending(p => p.Score)
-                    .Select(p => $"{p.Name} — {p.Score.ToPhrase("очко", "очка", "очков")}")
-                    .Append($"осталось {state.WordsLeft.Count.ToPhrase("задание", "заданий", "заданий")} "));
+            return
+                $"{state.CurrentPlayer.Name}, у тебя {state.CurrentPlayer.Score.ToPhrase("очко", "очка", "очков")}, " ;
 
         }
 

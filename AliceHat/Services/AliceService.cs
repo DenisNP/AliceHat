@@ -142,12 +142,22 @@ namespace AliceHat.Services
             {
                 if (state.WordsLeft.IndexOf(state.CurrentWord) == state.WordsLeft.Count / 2)
                 {
+                    if (state.CurrentPlayerIdx == 0)
                     //continue game read score
                     phrase += new Phrase(
-                        $"{GameplayService.ReadScore(request.State.User, state)}\n" +
+                        $"{GameplayService.ReadScoreOnDemand(request.State.User, state)}\n" +
+                           $"осталось {state.WordsLeft.Count.ToPhrase("задание", "заданий", "заданий")} " +
                         GameplayService.ReadWord(request.State.Session, _soundEngine),
                         _ingameButtons
                     );
+                    else
+                    {
+                        phrase += new Phrase(
+                            $"{GameplayService.ReadScoreOnDemand(request.State.User, state)}\n" +
+                            GameplayService.ReadWord(request.State.Session, _soundEngine),
+                            _ingameButtons
+                        );
+                    }
                 }
                 else
                 {

@@ -11,8 +11,8 @@ namespace AliceHat.Services
     {
         private readonly GameplayService _gameplayService;
         private readonly string[] _prepareButtons = {"Только я", "Заново", "Помощь", "Выход"};
-        private readonly string[] _ingameButtons = {"Повтори", "Не знаю", "Начать с начала", "Какой счет", "Выход"};
-        private readonly string[] _yesNoButtons = {"Да", "Нет"};
+        private readonly string[] _ingameButtons = {"Повтори", "Не знаю", "Начать с начала", "Помощь", "Какой счет", "Выход" };
+        private readonly string[] _yesNoButtons = {"Да", "Нет", "Помощь" };
 
         private readonly ISoundEngine _soundEngine = new AliceSoundEngine();
         
@@ -200,7 +200,7 @@ namespace AliceHat.Services
                 case SessionStep.AwaitNames:
                     phrase = new Phrase(
                         "Ты в игре «Шляпа», в которой я буду говорить тебе или вам с друзьями короткие определения, " +
-                        "а вы должны отгадывать слова. Прямо сейчас я жду от тебя список имён игроков, " +
+                        "а вы должны отгадывать слова. Прямо сейчас назови мне имена игроков по порядку, " +
                         "либо можешь сказать, что играть будешь только ты.",
                         _prepareButtons
                     );
@@ -213,13 +213,16 @@ namespace AliceHat.Services
                         $"{(multi ? "вам" : "тебе")} короткие определения, " +
                         $"а {(multi ? "вы отгадываете" : "ты отгадываешь")} слова. " +
                         $"Прямо сейчас я дала {(multi ? $"игроку по имени {state.CurrentPlayer.Name}" : "тебе")} " +
-                        "очередное задание, и жду ответ. Можно попросить меня повторить задание, если нужно.",
+                        "очередное задание, и жду на него ответ. Можно попросить меня повторить задание, если нужно," +
+                        " или пропустить его, сказав «Не знаю».",
                         _ingameButtons
                     );
                     break;
                 case SessionStep.AwaitRestart:
                     phrase = new Phrase(
-                        "Я жду от тебя ответа на вопрос: хочешь ли ты начать новую игру?",
+                        "Ты в игре «Шляпа», в которой я буду говорить тебе или вам с друзьями" +
+                        " короткие определения, по которым нужно отгадывать слова." +
+                        "Сейчас ты можешь начать новую игру сказав «Да» и выйти сказав «Нет»",
                         _yesNoButtons
                     );
                     break;

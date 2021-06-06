@@ -1,4 +1,5 @@
-﻿using AliceHat.Models.Abstract;
+﻿using System;
+using AliceHat.Models.Abstract;
 
 namespace AliceHat.Models
 {
@@ -9,6 +10,7 @@ namespace AliceHat.Models
         public Complexity Complexity { get; set; }
         public WordStatus Status { get; set; }
         public string Definition { get; set; }
+        public string[] Mispronounce { get; set; } = Array.Empty<string>();
     }
 
     public enum WordStatus

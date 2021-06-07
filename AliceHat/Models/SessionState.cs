@@ -11,7 +11,6 @@ namespace AliceHat.Models
         public int CurrentPlayerIdx { get; set; } = 0;
         public List<WordData> WordsLeft { get; set; }
         public int TotalWords { get; set; }
-        public bool ScoreShown { get; set; }
         public bool LeftShown { get; set; }
 
         [JsonIgnore]
@@ -26,12 +25,11 @@ namespace AliceHat.Models
             CurrentPlayerIdx = 0;
             WordsLeft = null;
             TotalWords = 0;
-            ScoreShown = false;
         }
 
         public bool NeedShowScore()
         {
-            return !ScoreShown && WordsLeft.Count <= TotalWords / 2;
+            return !CurrentPlayer.ScoreShown && WordsLeft.Count <= TotalWords / 2;
         }
     }
 
@@ -39,6 +37,7 @@ namespace AliceHat.Models
     {
         public string Name { get; set; }
         public int Score { get; set; }
+        public bool ScoreShown { get; set; }
     }
 
     public enum SessionStep

@@ -193,7 +193,7 @@ namespace AliceHat.Services
 
         public void SetScoreShown(SessionState state)
         {
-            state.ScoreShown = true;
+            state.CurrentPlayer.ScoreShown = true;
         }
 
         public void SetLeftShown(SessionState state)

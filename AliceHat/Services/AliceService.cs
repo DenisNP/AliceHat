@@ -11,7 +11,7 @@ namespace AliceHat.Services
     {
         private readonly GameplayService _gameplayService;
         private readonly string[] _prepareButtons = {"Только я", "Заново", "Помощь", "Выход"};
-        private readonly string[] _ingameButtons = {"Повтори", "Не знаю", "Начать с начала", "Помощь", "Какой счет", "Выход" };
+        private readonly string[] _ingameButtons = {"Повтори", "Не знаю", "Какой счёт", "Начать с начала", "Помощь", "Выход" };
         private readonly string[] _yesNoButtons = {"Да", "Нет", "Помощь" };
 
         private readonly ISoundEngine _soundEngine = new AliceSoundEngine();
@@ -232,7 +232,7 @@ namespace AliceHat.Services
                 case SessionStep.AwaitRestart:
                     phrase = new Phrase(
                         "Ты в игре «Шляпа», в которой я буду говорить тебе или вам с друзьями" +
-                        " короткие определения, по которым нужно отгадывать слова." +
+                        " короткие определения, по которым нужно отгадывать слова. " +
                         "Сейчас ты можешь начать новую игру сказав «Да» и выйти сказав «Нет»",
                         _yesNoButtons
                     );

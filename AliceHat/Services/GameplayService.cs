@@ -8,6 +8,7 @@ namespace AliceHat.Services
     public class GameplayService
     {
         private readonly ContentService _contentService;
+        public int WordsCount = 0;
         
         private static readonly string[] InfixesSingle =
         {
@@ -66,16 +67,10 @@ namespace AliceHat.Services
                 Score = 0
             }).ToArray();
 
-            int wordsCount = playerNames.Length switch
-            {
-                1 => 7,
-                2 => 10,
-                3 => 12,
-                _ => 3 * playerNames.Length
-            };
+            WordsCount = Utils.CalculateWordCount(playerNames);
 
             session.CurrentPlayerIdx = session.Players.Length - 1;
-            session.WordsLeft = _contentService.GetByComplexity(wordsCount, user.WordIdsGot);
+            session.WordsLeft = _contentService.GetByComplexity(WordsCount, user.WordIdsGot);
             session.Step = SessionStep.Game;
             user.WordIdsGot.AddRange(session.WordsLeft.Select(w => w.Id));
             while (user.WordIdsGot.Count > 100)
@@ -155,8 +150,8 @@ namespace AliceHat.Services
                     return letter.ToLower();
             }
         }
-        
-        public static string ReadWord(SessionState state, ISoundEngine soundEngine, ReadMode readMode = ReadMode.Normal)
+
+        public static string ReadWord(SessionState state, ISoundEngine soundEngine, ReadMode readMode = ReadMode.Normal, bool disableName = false)
         {
             string infix;
             if (state.Players.Length == 1)
@@ -192,7 +187,7 @@ namespace AliceHat.Services
 
             string firstLetter = state.CurrentWord.Word.First().ToString().ToUpper();
             var letterText = $"{LetterPrefixes.PickRandom()} {soundEngine.GetLetterPronounce(firstLetter, GetLetterTts(firstLetter))}";
-            string nameText = state.Players.Length == 1 ? infix.ToUpperFirst() : $"{state.CurrentPlayer.Name}, {infix}";
+            string nameText = state.Players.Length == 1 || disableName ? infix.ToUpperFirst() : $"{state.CurrentPlayer.Name}, {infix}";
             return $"{nameText}: {soundEngine.GetPause(500)}\n{soundEngine.GetNextWordSound()}" +
                    $"{state.CurrentWord.Definition.ToUpperFirst()}, {letterText}.";
         }

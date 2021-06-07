@@ -138,38 +138,30 @@ namespace AliceHat.Services
                 );
                 return phrase.Generate(request);
             }
+
+            
+
+            if (state.WordsLeft.Count <= _gameplayService.WordsCount / 2 &&
+                state.WordsLeft.Count > _gameplayService.WordsCount / 2 - state.Players.Length)
+            {
+                //continue game read score
+                phrase += new Phrase(
+                    $"{GameplayService.ReadScoreOnDemand(request.State.User, state)}\n" +
+                    $"осталось {state.WordsLeft.Count.ToPhrase("задание", "задания", "заданий")} " +
+                    GameplayService.ReadWord(request.State.Session, _soundEngine),
+                    _ingameButtons
+                );
+            }
             else
             {
-                if (state.WordsLeft.IndexOf(state.CurrentWord) == state.WordsLeft.Count / 2)
-                {
-                    if (state.CurrentPlayerIdx == 0)
-                    //continue game read score
-                    phrase += new Phrase(
-                        $"{GameplayService.ReadScoreOnDemand(request.State.User, state)}\n" +
-                           $"осталось {state.WordsLeft.Count.ToPhrase("задание", "заданий", "заданий")} " +
-                        GameplayService.ReadWord(request.State.Session, _soundEngine),
-                        _ingameButtons
-                    );
-                    else
-                    {
-                        phrase += new Phrase(
-                            $"{GameplayService.ReadScoreOnDemand(request.State.User, state)}\n" +
-                            GameplayService.ReadWord(request.State.Session, _soundEngine),
-                            _ingameButtons
-                        );
-                    }
-                }
-                else
-                {
-                    //continue game
-                    phrase += new Phrase(
-                        GameplayService.ReadWord(request.State.Session, _soundEngine),
-                        _ingameButtons
-                    );
-                }
-
-                return phrase.Generate(request);
+                //continue game
+                phrase += new Phrase(
+                    GameplayService.ReadWord(request.State.Session, _soundEngine),
+                    _ingameButtons
+                );
             }
+
+            return phrase.Generate(request);
         }
 
         private AliceResponse Exit(AliceRequest request)
@@ -190,7 +182,7 @@ namespace AliceHat.Services
             {
                 phrase = new Phrase(
                     $"{GameplayService.ReadScoreOnDemand(request.State.User, state)}\n" +
-                    $"{GameplayService.ReadWord(request.State.Session, _soundEngine, ReadMode.Repeat)}",
+                    $"{GameplayService.ReadWord(request.State.Session, _soundEngine, ReadMode.Repeat, true)}",
                     _ingameButtons
                 );
             }

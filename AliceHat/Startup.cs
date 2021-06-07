@@ -35,8 +35,9 @@ namespace AliceHat
             });
 
             contentService.LoadWords();
-            
+#if DEBUG == false
             telegramService.Start();
+#endif
         }
     }
 }

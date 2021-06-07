@@ -125,5 +125,16 @@ namespace AliceHat
             int levDist = LevenshteinDistance(a, b);
             return 1.0 - (double) levDist / maxLen;
         }
+
+        public static int CalculateWordCount(string[] playerNames)
+        {
+            return playerNames.Length switch
+            {
+                1 => 7,
+                2 => 10,
+                3 => 12,
+                _ => 3 * playerNames.Length
+            };
+        }
     }
 }

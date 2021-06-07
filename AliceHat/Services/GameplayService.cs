@@ -8,6 +8,7 @@ namespace AliceHat.Services
     public class GameplayService
     {
         private readonly ContentService _contentService;
+        public int WordsCount = 0;
         
         private static readonly string[] InfixesSingle =
         {
@@ -66,16 +67,10 @@ namespace AliceHat.Services
                 Score = 0
             }).ToArray();
 
-            int wordsCount = playerNames.Length switch
-            {
-                1 => 7,
-                2 => 10,
-                3 => 12,
-                _ => 3 * playerNames.Length
-            };
+            WordsCount = Utils.CalculateWordCount(playerNames);
 
             session.CurrentPlayerIdx = session.Players.Length - 1;
-            session.WordsLeft = _contentService.GetByComplexity(wordsCount, user.WordIdsGot);
+            session.WordsLeft = _contentService.GetByComplexity(WordsCount, user.WordIdsGot);
             session.Step = SessionStep.Game;
             user.WordIdsGot.AddRange(session.WordsLeft.Select(w => w.Id));
             while (user.WordIdsGot.Count > 100)
@@ -155,8 +150,8 @@ namespace AliceHat.Services
                     return letter.ToLower();
             }
         }
-        
-        public static string ReadWord(SessionState state, ISoundEngine soundEngine, ReadMode readMode = ReadMode.Normal)
+
+        public static string ReadWord(SessionState state, ISoundEngine soundEngine, ReadMode readMode = ReadMode.Normal, bool disableName = false)
         {
             string infix;
             if (state.Players.Length == 1)
@@ -192,9 +187,20 @@ namespace AliceHat.Services
 
             string firstLetter = state.CurrentWord.Word.First().ToString().ToUpper();
             var letterText = $"{LetterPrefixes.PickRandom()} {soundEngine.GetLetterPronounce(firstLetter, GetLetterTts(firstLetter))}";
-            string nameText = state.Players.Length == 1 ? infix.ToUpperFirst() : $"{state.CurrentPlayer.Name}, {infix}";
+            string nameText = state.Players.Length == 1 || disableName ? infix.ToUpperFirst() : $"{state.CurrentPlayer.Name}, {infix}";
             return $"{nameText}: {soundEngine.GetPause(500)}\n{soundEngine.GetNextWordSound()}" +
                    $"{state.CurrentWord.Definition.ToUpperFirst()}, {letterText}.";
+        }
+
+        public static string ReadScoreOnDemand(UserState user, SessionState state)
+        {
+            if (state.Players.Length == 1)
+                return
+                    $"Пока что у тебя {state.Players.First().Score.ToPhrase("очко", "очка", "очков")}, " +
+                    $"осталось {state.WordsLeft.Count.ToPhrase("задание", "заданий", "заданий")} ";
+            return
+                $"{state.CurrentPlayer.Name}, у тебя {state.CurrentPlayer.Score.ToPhrase("очко", "очка", "очков")}, " ;
+
         }
 
         public static string ReadScore(UserState user, SessionState state)
@@ -202,7 +208,7 @@ namespace AliceHat.Services
             if (state.Players.Length == 1)
                 return $"У тебя {state.Players.First().Score.ToPhrase("очко", "очка", "очков")} за эту игру, " +
                        $"и {user.TotalScore.ToPhrase("очко", "очка", "очков")} всего!";
-            
+
             return string.Join(
                 "\n",
                 state.Players

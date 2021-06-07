@@ -25,6 +25,7 @@ namespace AliceHat.Models
             CurrentPlayerIdx = 0;
             WordsLeft = null;
             TotalWords = 0;
+            LeftShown = false;
         }
 
         public bool NeedShowScore()

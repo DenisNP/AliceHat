@@ -10,6 +10,9 @@ namespace AliceHat.Models
         public Player[] Players { get; set; }
         public int CurrentPlayerIdx { get; set; } = 0;
         public List<WordData> WordsLeft { get; set; }
+        public int TotalWords { get; set; }
+        public bool ScoreShown { get; set; }
+        public bool LeftShown { get; set; }
 
         [JsonIgnore]
         public Player CurrentPlayer => Players != null && Players.Length > CurrentPlayerIdx
@@ -22,6 +25,13 @@ namespace AliceHat.Models
             Players = null;
             CurrentPlayerIdx = 0;
             WordsLeft = null;
+            TotalWords = 0;
+            ScoreShown = false;
+        }
+
+        public bool NeedShowScore()
+        {
+            return !ScoreShown && WordsLeft.Count <= TotalWords / 2;
         }
     }
 

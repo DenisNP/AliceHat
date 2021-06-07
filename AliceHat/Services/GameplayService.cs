@@ -8,7 +8,6 @@ namespace AliceHat.Services
     public class GameplayService
     {
         private readonly ContentService _contentService;
-        public int WordsCount = 0;
         
         private static readonly string[] InfixesSingle =
         {
@@ -67,10 +66,10 @@ namespace AliceHat.Services
                 Score = 0
             }).ToArray();
 
-            WordsCount = Utils.CalculateWordCount(playerNames);
+            session.TotalWords = Utils.CalculateWordCount(playerNames);
 
             session.CurrentPlayerIdx = session.Players.Length - 1;
-            session.WordsLeft = _contentService.GetByComplexity(WordsCount, user.WordIdsGot);
+            session.WordsLeft = _contentService.GetByComplexity(session.TotalWords, user.WordIdsGot);
             session.Step = SessionStep.Game;
             user.WordIdsGot.AddRange(session.WordsLeft.Select(w => w.Id));
             while (user.WordIdsGot.Count > 100)
@@ -192,15 +191,26 @@ namespace AliceHat.Services
                    $"{state.CurrentWord.Definition.ToUpperFirst()}, {letterText}.";
         }
 
-        public static string ReadScoreOnDemand(UserState user, SessionState state)
+        public void SetScoreShown(SessionState state)
         {
-            if (state.Players.Length == 1)
-                return
-                    $"Пока что у тебя {state.Players.First().Score.ToPhrase("очко", "очка", "очков")}, " +
-                    $"осталось {state.WordsLeft.Count.ToPhrase("задание", "заданий", "заданий")} ";
-            return
-                $"{state.CurrentPlayer.Name}, у тебя {state.CurrentPlayer.Score.ToPhrase("очко", "очка", "очков")}, " ;
+            state.ScoreShown = true;
+        }
 
+        public void SetLeftShown(SessionState state)
+        {
+            state.LeftShown = true;
+        }
+
+        public static string ReadScoreOnDemand(SessionState state, bool endSentence = false)
+        {
+            return state.Players.Length == 1
+                ? $"Пока что у тебя {state.Players.First().Score.ToPhrase("очко", "очка", "очков")}{(endSentence ? ".\n" : ", ")}"
+                : $"{state.CurrentPlayer.Name}, у тебя {state.CurrentPlayer.Score.ToPhrase("очко", "очка", "очков")}{(endSentence ? ".\n" : ", ")}";
+        }
+
+        public static string ReadWordsLeft(SessionState state)
+        {
+            return $"осталось {state.WordsLeft.Count.ToPhrase("задание", "задания", "заданий")}.\n";
         }
 
         public static string ReadScore(UserState user, SessionState state)

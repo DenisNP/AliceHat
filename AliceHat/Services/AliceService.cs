@@ -138,23 +138,31 @@ namespace AliceHat.Services
                 );
                 return phrase.Generate(request);
             }
-
             
-
-            if (state.WordsLeft.Count <= _gameplayService.WordsCount / 2 &&
-                state.WordsLeft.Count > _gameplayService.WordsCount / 2 - state.Players.Length)
+            // continue game
+            if (state.NeedShowScore())
             {
-                //continue game read score
+                _gameplayService.SetScoreShown(state);
+                
+                // continue game read score
                 phrase += new Phrase(
-                    $"{GameplayService.ReadScoreOnDemand(request.State.User, state)}\n" +
-                    $"осталось {state.WordsLeft.Count.ToPhrase("задание", "задания", "заданий")} " +
-                    GameplayService.ReadWord(request.State.Session, _soundEngine),
+                    GameplayService.ReadScoreOnDemand(state, state.LeftShown),
                     _ingameButtons
                 );
+
+                // read left words
+                if (!state.LeftShown)
+                {
+                    _gameplayService.SetLeftShown(state);
+                    phrase += new Phrase(GameplayService.ReadWordsLeft(state));
+                }
+                
+                // read word
+                phrase += new Phrase(GameplayService.ReadWord(request.State.Session, _soundEngine, ReadMode.Normal, true));
             }
             else
             {
-                //continue game
+                // just continue game
                 phrase += new Phrase(
                     GameplayService.ReadWord(request.State.Session, _soundEngine),
                     _ingameButtons
@@ -181,8 +189,9 @@ namespace AliceHat.Services
             if (request.State.Session.Step == SessionStep.Game)
             {
                 phrase = new Phrase(
-                    $"{GameplayService.ReadScoreOnDemand(request.State.User, state)}\n" +
-                    $"{GameplayService.ReadWord(request.State.Session, _soundEngine, ReadMode.Repeat, true)}",
+                    GameplayService.ReadScoreOnDemand(state, false) +
+                    GameplayService.ReadWordsLeft(state) +
+                    GameplayService.ReadWord(request.State.Session, _soundEngine, ReadMode.Repeat, true),
                     _ingameButtons
                 );
             }

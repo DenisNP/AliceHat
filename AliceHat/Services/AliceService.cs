@@ -11,7 +11,7 @@ namespace AliceHat.Services
     {
         private readonly GameplayService _gameplayService;
         private readonly string[] _prepareButtons = {"Только я", "Заново", "Помощь", "Выход"};
-        private readonly string[] _ingameButtons = {"Повтори", "Не знаю", "Какой счёт", "Начать с начала", "Помощь", "Выход" };
+        private readonly string[] _ingameButtons = {"Повтори", "Подсказка", "Какой счёт", "Начать с начала", "Помощь", "Выход" };
         private readonly string[] _yesNoButtons = {"Да", "Нет", "Помощь" };
 
         private readonly ISoundEngine _soundEngine = new AliceSoundEngine();
@@ -37,6 +37,10 @@ namespace AliceHat.Services
             // help
             if (request.HasIntent("help"))
                 return Help(request);
+
+            // help
+            if (request.HasIntent("hint"))
+                return Hint(request);
 
             // score
             if (request.HasIntent("score"))
@@ -179,6 +183,27 @@ namespace AliceHat.Services
             response.Response.EndSession = true;
 
             return response;
+        }
+
+        private AliceResponse Hint(AliceRequest request)
+        {
+            Phrase phrase;
+            SessionState state = request.State.Session;
+
+            if (request.State.Session.Step == SessionStep.Game)
+            {
+                phrase = new Phrase(
+                    state.CurrentWord.Definition.ToUpperFirst() + ".\n" +
+                    GameplayService.ReadHint(request.State.Session, _soundEngine),
+                    _ingameButtons
+                );
+            }
+            else
+            {
+                return Help(request);
+            }
+
+            return phrase.Generate(request);
         }
 
         private AliceResponse Score(AliceRequest request)

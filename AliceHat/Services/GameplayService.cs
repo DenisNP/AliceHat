@@ -42,6 +42,13 @@ namespace AliceHat.Services
             "первая буква"
         };
 
+        private static readonly string[] LetterEndings =
+        {
+            "заканчивается на",
+            "в конце",
+            "последняя буква"
+        };
+
         public GameplayService(ContentService contentService)
         {
             _contentService = contentService;
@@ -190,6 +197,23 @@ namespace AliceHat.Services
             return $"{nameText}: {soundEngine.GetPause(500)}\n{soundEngine.GetNextWordSound()}" +
                    $"{state.CurrentWord.Definition.ToUpperFirst()}, {letterText}.";
         }
+
+        public static string ReadHint(SessionState state, ISoundEngine soundEngine)
+        {
+            string firstLetter = state.CurrentWord.Word.First().ToString().ToUpper();
+            string lastLetter = state.CurrentWord.Word.Last().ToString().ToUpper();
+
+            var hiddenWord =
+                $"{firstLetter}{string.Join("", Enumerable.Repeat("-", state.CurrentWord.Word.Length - 2))}{lastLetter}";
+
+            var letterStartText = GetLetterTts(firstLetter);
+            var letterEndText = GetLetterTts(lastLetter);
+
+            return $"{soundEngine.GetPause(500)}\n" +
+                   $"[screen|{hiddenWord}]" +
+                   $"[voice|Всего {state.CurrentWord.Word.Length} букв, первая {letterStartText}, последняя {letterEndText}].";
+        }
+
 
         public void SetScoreShown(SessionState state)
         {

@@ -130,9 +130,9 @@ namespace AliceHat
         {
             return playerNames.Length switch
             {
-                1 => 7,
-                2 => 10,
-                3 => 12,
+                1 => 10,
+                2 => 12,
+                3 => 15,
                 _ => 3 * playerNames.Length
             };
         }

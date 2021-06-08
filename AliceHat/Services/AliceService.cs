@@ -120,13 +120,19 @@ namespace AliceHat.Services
             SessionState state = request.State.Session;
             string word = state.CurrentWord.Word;
             string wordSaid = string.Join("", request.Request.Nlu.Tokens);
-            bool right = _gameplayService.Answer(request.State.User, request.State.Session, wordSaid);
-            string sound = right
+            AnswerResult result = _gameplayService.Answer(request.State.User, request.State.Session, wordSaid);
+            string sound = result == AnswerResult.Right
                 ? "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/7fbd83e1-7c22-468d-a8fe-8f0439000fd6.opus]"
                 : "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/ac858f28-3c34-403c-81c7-5d64449e4ea7.opus]";
-
+            
             string prefix = sound;
-            if (!right)
+
+            if (result == AnswerResult.SeccondAttempt)
+            {
+                return Hint(request, prefix);
+            }
+            
+            if (result == AnswerResult.Wrong)
                 prefix += request.HasScreen()
                     ? $"Правильный ответ: {word.ToUpper()}.\n\n[p|300]"
                     : $"Твой ответ: {wordSaid.ToUpper()}, а правильный: {word.ToUpper()}.\n\n[p|300]";
@@ -185,14 +191,15 @@ namespace AliceHat.Services
             return response;
         }
 
-        private AliceResponse Hint(AliceRequest request)
+        private AliceResponse Hint(AliceRequest request, string prefix = "")
         {
             Phrase phrase;
             SessionState state = request.State.Session;
+            _gameplayService.HintTaken(state);
 
             if (request.State.Session.Step == SessionStep.Game)
             {
-                phrase = new Phrase(
+                phrase = new Phrase(prefix + 
                     state.CurrentWord.Definition.ToUpperFirst() + ".\n" +
                     GameplayService.ReadHint(request.State.Session, _soundEngine),
                     _ingameButtons

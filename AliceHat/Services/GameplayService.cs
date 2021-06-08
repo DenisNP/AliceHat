@@ -8,7 +8,11 @@ namespace AliceHat.Services
     public class GameplayService
     {
         private readonly ContentService _contentService;
-        
+
+        private const int _scoreSecondAttempt = 1;
+        private const int _scoreWithHint = 2;
+        private const int _baseScore = 3;
+
         private static readonly string[] InfixesSingle =
         {
             "следующее слово",
@@ -85,29 +89,64 @@ namespace AliceHat.Services
             NextWord(session);
         }
 
-        public bool Answer(UserState user, SessionState session, string answer)
+        public void HintTaken(SessionState state)
         {
-            bool right = Utils.LevenshteinMatchRatio(session.CurrentWord.Word, answer) >= 0.65;
+            state.HintTaken = true;
+        }
+
+        public void SecondAttempt(SessionState state)
+        {
+            state.SecondAttempt = true;
+        }
+
+        public AnswerResult Answer(UserState user, SessionState session, string answer)
+        {
+            bool right = Utils.LevenshteinMatchRatio(session.CurrentWord.Word, answer) >= 0.85;
             bool mispronounced = session.CurrentWord.Mispronounce.Contains(answer);
+            AnswerResult result;
 
             if (right || mispronounced)
-                session.CurrentPlayer.Score++;
-
-            if (session.WordsLeft.Count > 0)
             {
-                NextWord(session);
+                if (session.SecondAttempt)
+                    session.CurrentPlayer.Score += _scoreSecondAttempt;
+                else if (session.HintTaken)
+                    session.CurrentPlayer.Score += _scoreWithHint;
+                else
+                {
+                    session.CurrentPlayer.Score += _baseScore;
+                }
+
+                result = AnswerResult.Right;
+            }
+            else if (session.SecondAttempt || session.HintTaken)
+            {
+                result = AnswerResult.Wrong;
             }
             else
             {
-                // single player, write score
-                if (session.Players.Length == 1) 
-                    user.TotalScore += session.Players.First().Score;
-                
-                session.CurrentWord = null;
-                session.Step = SessionStep.AwaitRestart;
+                session.SecondAttempt = true;
+                result = AnswerResult.SeccondAttempt;
             }
 
-            return right;
+            if (result != AnswerResult.SeccondAttempt)
+            {
+                //Next word or end game
+                if (session.WordsLeft.Count > 0)
+                {
+                    NextWord(session);
+                }
+                else
+                {
+                    // single player, write score
+                    if (session.Players.Length == 1)
+                        user.TotalScore += session.Players.First().Score;
+
+                    session.CurrentWord = null;
+                    session.Step = SessionStep.AwaitRestart;
+                }
+            }
+
+            return result;
         }
 
         public void PauseForRestart(SessionState session)
@@ -122,6 +161,9 @@ namespace AliceHat.Services
 
         private void NextWord(SessionState session)
         {
+            session.HintTaken = false;
+            session.SecondAttempt = false;
+
             session.CurrentWord = session.WordsLeft[0];
             session.WordsLeft.RemoveAt(0);
             
@@ -208,10 +250,11 @@ namespace AliceHat.Services
 
             var letterStartText = GetLetterTts(firstLetter);
             var letterEndText = GetLetterTts(lastLetter);
+            var letterCount = state.CurrentWord.Word.Length.ToPhrase("буква", "буквы", "букв");
 
             return $"{soundEngine.GetPause(500)}\n" +
-                   $"[screen|{hiddenWord}]" +
-                   $"[voice|Всего {state.CurrentWord.Word.Length} букв, первая {letterStartText}, последняя {letterEndText}].";
+                   $"[screen|{hiddenWord} ({letterCount})]" +
+                   $"[voice|Всего {letterCount}, первая {letterStartText}, последняя {letterEndText}].";
         }
 
 
@@ -258,5 +301,12 @@ namespace AliceHat.Services
         First,
         Repeat,
         Continue
+    }
+
+    public enum AnswerResult
+    {
+        Right,
+        SeccondAttempt,
+        Wrong
     }
 }

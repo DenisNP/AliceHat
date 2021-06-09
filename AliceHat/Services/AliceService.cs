@@ -193,24 +193,22 @@ namespace AliceHat.Services
 
         private AliceResponse Hint(AliceRequest request, string prefix = "")
         {
-            Phrase phrase;
             SessionState state = request.State.Session;
             _gameplayService.HintTaken(state);
 
             if (request.State.Session.Step == SessionStep.Game)
             {
-                phrase = new Phrase(prefix + 
-                    state.CurrentWord.Definition.ToUpperFirst() + ".\n" +
+                var phrase = new Phrase(
+                    $"{prefix}Подскажу:\n" +
+                    $"{state.CurrentWord.Definition.ToUpperFirst()}.\n" +
                     GameplayService.ReadHint(request.State.Session, _soundEngine),
                     _ingameButtons
                 );
-            }
-            else
-            {
-                return Help(request);
+
+                return phrase.Generate(request);
             }
 
-            return phrase.Generate(request);
+            return Help(request);
         }
 
         private AliceResponse Score(AliceRequest request)

@@ -11,7 +11,7 @@ namespace AliceHat.Services
     {
         private readonly GameplayService _gameplayService;
         private readonly string[] _prepareButtons = {"Только я", "Заново", "Помощь", "Выход"};
-        private readonly string[] _ingameButtons = {"Повтори", "Не знаю", "Какой счёт", "Начать с начала", "Помощь", "Выход" };
+        private readonly string[] _ingameButtons = {"Повтори", "Подсказка", "Какой счёт", "Начать с начала", "Помощь", "Выход" };
         private readonly string[] _yesNoButtons = {"Да", "Нет", "Помощь" };
 
         private readonly ISoundEngine _soundEngine = new AliceSoundEngine();
@@ -37,6 +37,10 @@ namespace AliceHat.Services
             // help
             if (request.HasIntent("help"))
                 return Help(request);
+
+            // help
+            if (request.HasIntent("hint"))
+                return Hint(request);
 
             // score
             if (request.HasIntent("score"))
@@ -116,13 +120,19 @@ namespace AliceHat.Services
             SessionState state = request.State.Session;
             string word = state.CurrentWord.Word;
             string wordSaid = string.Join("", request.Request.Nlu.Tokens);
-            bool right = _gameplayService.Answer(request.State.User, request.State.Session, wordSaid);
-            string sound = right
+            AnswerResult result = _gameplayService.Answer(request.State.User, request.State.Session, wordSaid);
+            string sound = result == AnswerResult.Right
                 ? "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/7fbd83e1-7c22-468d-a8fe-8f0439000fd6.opus]"
                 : "[audio|dialogs-upload/008dafcd-99bc-4fd1-9561-4686c375eec6/ac858f28-3c34-403c-81c7-5d64449e4ea7.opus]";
-
+            
             string prefix = sound;
-            if (!right)
+
+            if (result == AnswerResult.SeccondAttempt)
+            {
+                return Hint(request, prefix);
+            }
+            
+            if (result == AnswerResult.Wrong)
                 prefix += request.HasScreen()
                     ? $"Правильный ответ: {word.ToUpper()}.\n\n[p|300]"
                     : $"Твой ответ: {wordSaid.ToUpper()}, а правильный: {word.ToUpper()}.\n\n[p|300]";
@@ -179,6 +189,28 @@ namespace AliceHat.Services
             response.Response.EndSession = true;
 
             return response;
+        }
+
+        private AliceResponse Hint(AliceRequest request, string prefix = "")
+        {
+            Phrase phrase;
+            SessionState state = request.State.Session;
+            _gameplayService.HintTaken(state);
+
+            if (request.State.Session.Step == SessionStep.Game)
+            {
+                phrase = new Phrase(prefix + 
+                    state.CurrentWord.Definition.ToUpperFirst() + ".\n" +
+                    GameplayService.ReadHint(request.State.Session, _soundEngine),
+                    _ingameButtons
+                );
+            }
+            else
+            {
+                return Help(request);
+            }
+
+            return phrase.Generate(request);
         }
 
         private AliceResponse Score(AliceRequest request)

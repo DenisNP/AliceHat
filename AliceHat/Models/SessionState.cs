@@ -12,6 +12,9 @@ namespace AliceHat.Models
         public List<WordData> WordsLeft { get; set; }
         public int TotalWords { get; set; }
         public bool LeftShown { get; set; }
+        //hint logic
+        public bool HintTaken { get; set; }
+        public bool SecondAttempt { get; set; }
 
         [JsonIgnore]
         public Player CurrentPlayer => Players != null && Players.Length > CurrentPlayerIdx
@@ -26,6 +29,8 @@ namespace AliceHat.Models
             WordsLeft = null;
             TotalWords = 0;
             LeftShown = false;
+            HintTaken = false;
+            SecondAttempt = false;
         }
 
         public bool NeedShowScore()
